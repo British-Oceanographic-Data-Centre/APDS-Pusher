@@ -1,5 +1,11 @@
-"""APDS Python Command Line Options Program."""
+"""APDS command line tool"""
 import click
+
+
+def verify_cli_input(cli_input: str) -> bool:
+    """Verifies the inputs and returns True if they are non empty strings."""
+    return isinstance(cli_input, str) and len(cli_input) > 1
+
 
 
 @click.command()
@@ -19,12 +25,17 @@ def cli_main(deployment_id: str,
              config_location: str,
              non_production: bool = False,
              dry_run: bool = False):
-    print(deployment_id)
-    print(deployment_location)
-    print(config_location)
-    print(non_production)
-    print(dry_run)
+    
+    argument_names = ['Deployment Id', 'Deployment Location', 'Config Location']
 
+    program_arguments = [deployment_id,
+                                  deployment_location,
+                                  config_location]
+
+    # Loop through the required arguments to perform verification
+    for arg_name, arg in zip(argument_names, program_arguments):
+        if not verify_cli_input(arg):
+            print('{} is invalid'.format(arg_name))
 
 
 if __name__ == '__main__':
