@@ -28,7 +28,7 @@ def verify_command_line_arguments(program_arguments: list) -> bool:
     Returns:
         A string -> Accepted/Refused
     """
-    verification = all([verify_cli_input(arg) for arg in program_arguments[:3]])
+    verification = all((verify_cli_input(arg) for arg in program_arguments[:3]))
     message = "Accepted" if verification else "Refused"
     print(message)
 
@@ -61,4 +61,4 @@ def cli_main(
 
 
 if __name__ == "__main__":
-    cli_main()
+    cli_main()  # pylint: disable=no-value-for-parameter
