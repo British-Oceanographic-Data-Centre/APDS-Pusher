@@ -1,1 +1,3 @@
 """APDS-pusher."""
+
+import main
