@@ -1,1 +1,1 @@
-"""APDS-pusher"""
+"""APDS-pusher."""
