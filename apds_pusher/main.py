@@ -2,35 +2,18 @@
 import click
 
 
-# Verification has been left simplified for the time being - jamclar 28/04/2022
-def verify_cli_input(cli_input: str) -> bool:
-    """Verifies individual inputs and returns True if they are non empty strings.
-
-    Args:q
-        cli_input (str): the inputs sent from the command line.
-
-    Returns:
-        True/False
-    """
-    return isinstance(cli_input, str) and len(cli_input) > 1
-
-
-def verify_command_line_arguments(program_arguments: list) -> bool:
-    """Verification function for all inputs.
-
-    This function accepts all command line arguments as a list, and then
-    verifies the 3 required arguments. It will print 'Accepted' if the arguments
-    are acceptable, otherwise it will print 'Refused'.
+# Function left in simple state, to provide future scope for verification
+# of deployment id, deployment location and config location if needed.
+def verify_commandline_args(arguments: list) -> None:
+    """Function is only called when all args successfully pass verification.
 
     Args:
-        program_arguments (list): a list containing all command line arguments
-
-    Returns:
-        A string -> Accepted/Refused
+        arguments: A list containing all args from the command line.
     """
-    verification = all((verify_cli_input(arg) for arg in program_arguments[:3]))
-    message = "Accepted" if verification else "Refused"
-    print(message)
+    if arguments:
+        print("Accepted")
+    else:
+        print("Refused")
 
 
 click_dict = {
@@ -42,10 +25,26 @@ click_dict = {
 }
 
 
+def verify(_, param, value):
+    """Verification callback function called by click decorators.
+
+    Args:
+        _: unused (this is sent by click)
+        param: The parameter name, sent by click
+        value: The argument to be validated
+    Returns:
+        The value will be returned only if validation passes.
+    """
+    param = param.human_readable_name
+    if not (isinstance(value, str) and len(value) > 1):
+        raise click.BadParameter(f"{param} entered incorrectly")
+    return value
+
+
 @click.command()
-@click.option("--deployment_id", required=True, type=str, help=click_dict["deployment_id"])
-@click.option("--deployment_location", required=True, type=str, help=click_dict["deployment_location"])
-@click.option("--config_location", required=True, type=str, help=click_dict["config_location"])
+@click.option("--deployment_id", required=True, callback=verify, help=click_dict["deployment_id"])
+@click.option("--deployment_location", required=True, callback=verify, help=click_dict["deployment_location"])
+@click.option("--config_location", required=True, callback=verify, help=click_dict["config_location"])
 @click.option("--non_production", default=False, show_default=True, help=click_dict["non_production"])
 @click.option("--dry_run", default=False, show_default=True, help=click_dict["dry_run"])
 def cli_main(
@@ -57,7 +56,7 @@ def cli_main(
 ):
     """Accepts command line arguments and passes them to verification function."""
     program_arguments = [deployment_id, deployment_location, config_location, non_production, dry_run]
-    verify_command_line_arguments(program_arguments)
+    verify_commandline_args(program_arguments)
 
 
 if __name__ == "__main__":
