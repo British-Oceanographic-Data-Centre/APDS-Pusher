@@ -1,3 +1,3 @@
 """APDS-pusher."""
 
-import main
+from .main import cli_main
