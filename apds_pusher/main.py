@@ -2,30 +2,16 @@
 import click
 
 
-# Function left in simple state, to provide future scope for verification
-# of deployment id, deployment location and config location if needed.
-def verify_commandline_args(arguments: list) -> None:
-    """Function is only called when all args successfully pass verification.
-
-    Args:
-        arguments: A list containing all args from the command line.
-    """
-    if arguments:
-        print("Accepted")
-    else:
-        print("Refused")
-
-
-click_dict = {
+param_meanings = {
     "deployment_id": "The Code/ID for the specific deployment.",
-    "deployment_location": "Full path to file directory.",
-    "config_location": "Full path to config file.",
+    "deployment_location": "Full path to file directory where files to be uploaded are stored.",
+    "config_location": "Full path to config file used for authentication.",
     "non_production": "Pass this flag to run the application in a non-production environment.",
     "dry_run": "Pass this flag to perform a dry-run of the application.",
 }
 
 
-def verify(_, param, value):
+def verify_string_not_empty(_, param, value):
     """Verification callback function called by click decorators.
 
     Args:
@@ -42,21 +28,25 @@ def verify(_, param, value):
 
 
 @click.command()
-@click.option("--deployment_id", required=True, callback=verify, help=click_dict["deployment_id"])
-@click.option("--deployment_location", required=True, callback=verify, help=click_dict["deployment_location"])
-@click.option("--config_location", required=True, callback=verify, help=click_dict["config_location"])
-@click.option("--non_production", default=False, show_default=True, help=click_dict["non_production"])
-@click.option("--dry_run", default=False, show_default=True, help=click_dict["dry_run"])
+@click.option("--deployment_id", required=True, callback=verify_string_not_empty, help=param_meanings["deployment_id"])
+@click.option(
+    "--deployment_location", required=True, callback=verify_string_not_empty, help=param_meanings["deployment_location"]
+)
+@click.option(
+    "--config_location", required=True, callback=verify_string_not_empty, help=param_meanings["config_location"]
+)
+@click.option("--non_production", default=False, show_default=True, help=param_meanings["non_production"])
+@click.option("--dry_run", default=False, show_default=True, help=param_meanings["dry_run"])
 def cli_main(
     deployment_id: str,
     deployment_location: str,
     config_location: str,
-    non_production: bool = False,
-    dry_run: bool = False,
+    non_production: bool,
+    dry_run: bool,
 ):
     """Accepts command line arguments and passes them to verification function."""
     program_arguments = [deployment_id, deployment_location, config_location, non_production, dry_run]
-    verify_commandline_args(program_arguments)
+    print("Accepted:", program_arguments)
 
 
 if __name__ == "__main__":
