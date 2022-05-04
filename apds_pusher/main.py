@@ -1,5 +1,29 @@
 """APDS command line tool to perform simple verification of inputs."""
+import json
+from pathlib import Path
+import sys
+
 import click
+
+from apds_pusher import config_parser
+
+
+def load_configuration_file(config_path: Path) -> config_parser.Configuration:
+    """Load a configuration file JSON into a Configuration instance."""
+    # load the json file or exit if it's bad
+    try:
+        config_dict = json.loads(config_path.read_text(encoding=sys.getdefaultencoding()))
+    except json.JSONDecodeError:
+        raise click.ClickException(f"Configuration failed to load from file: {config_path})") from None
+
+    try:
+        config = config_parser.Configuration.from_dict_validated(config_dict)
+    except config_parser.ParserException as exc:
+        raise click.ClickException(exc.args[0]) from None
+
+    click.echo(message="Configuration accepted")
+
+    return config
 
 
 param_meanings = {
@@ -33,20 +57,23 @@ def verify_string_not_empty(_, param, value):
     "--deployment_location", required=True, callback=verify_string_not_empty, help=param_meanings["deployment_location"]
 )
 @click.option(
-    "--config_location", required=True, callback=verify_string_not_empty, help=param_meanings["config_location"]
+    "--config_location",
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help=param_meanings["config_location"],
 )
 @click.option("--non_production", default=False, show_default=True, help=param_meanings["non_production"])
 @click.option("--dry_run", default=False, show_default=True, help=param_meanings["dry_run"])
 def cli_main(
     deployment_id: str,
     deployment_location: str,
-    config_location: str,
+    config_location: Path,
     non_production: bool,
     dry_run: bool,
 ):
     """Accepts command line arguments and passes them to verification function."""
-    program_arguments = [deployment_id, deployment_location, config_location, non_production, dry_run]
-    print("Accepted:", program_arguments)
+    del deployment_id, deployment_location, non_production, dry_run
+    load_configuration_file(config_location)
 
 
 if __name__ == "__main__":
