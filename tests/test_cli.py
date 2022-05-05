@@ -4,7 +4,7 @@ from pathlib import Path
 import click
 import pytest
 
-from apds_pusher import main, config_parser
+from apds_pusher import config_parser, main
 
 
 @pytest.fixture(name="config_path")
