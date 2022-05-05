@@ -1,7 +1,8 @@
 """APDS command line tool to perform simple verification of inputs."""
 import json
-from pathlib import Path
 import sys
+from pathlib import Path
+from typing import Any
 
 import click
 
@@ -35,19 +36,18 @@ param_meanings = {
 }
 
 
-def verify_string_not_empty(_, param, value):
+def verify_string_not_empty(_: click.Context, param: click.Parameter, value: Any) -> str:
     """Verification callback function called by click decorators.
 
     Args:
-        _: unused (this is sent by click)
-        param: The parameter name, sent by click
+        _: Context (unused), sent by click
+        param: The parameter, sent by click
         value: The argument to be validated
     Returns:
         The value will be returned only if validation passes.
     """
-    param = param.human_readable_name
     if not (isinstance(value, str) and len(value) > 1):
-        raise click.BadParameter(f"{param} entered incorrectly")
+        raise click.BadParameter(f"{param.human_readable_name} entered incorrectly")
     return value
 
 
@@ -70,7 +70,7 @@ def cli_main(
     config_location: Path,
     non_production: bool,
     dry_run: bool,
-):
+) -> None:
     """Accepts command line arguments and passes them to verification function."""
     del deployment_id, deployment_location, non_production, dry_run
     load_configuration_file(config_location)
