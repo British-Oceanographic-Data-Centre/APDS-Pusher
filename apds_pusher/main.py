@@ -2,7 +2,6 @@
 import json
 import sys
 from pathlib import Path
-from typing import Any
 
 import click
 
@@ -27,16 +26,7 @@ def load_configuration_file(config_path: Path) -> config_parser.Configuration:
     return config
 
 
-param_meanings = {
-    "deployment_id": "The Code/ID for the specific deployment.",
-    "deployment_location": "Full path to file directory where files to be uploaded are stored.",
-    "config_location": "Full path to config file used for authentication.",
-    "non_production": "Pass this flag to run the application in a non-production environment.",
-    "dry_run": "Pass this flag to perform a dry-run of the application.",
-}
-
-
-def verify_string_not_empty(_: click.Context, param: click.Parameter, value: Any) -> str:
+def verify_string_not_empty(_: click.Context, param: click.Parameter, value: str) -> str:
     """Verification callback function called by click decorators.
 
     Args:
@@ -46,34 +36,56 @@ def verify_string_not_empty(_: click.Context, param: click.Parameter, value: Any
     Returns:
         The value will be returned only if validation passes.
     """
-    if not (isinstance(value, str) and len(value) > 1):
-        raise click.BadParameter(f"{param.human_readable_name} entered incorrectly")
-    return value
+    if value:
+        return value
+
+    raise click.BadParameter(f"{param.human_readable_name} must not be empty")
 
 
 @click.command()
-@click.option("--deployment_id", required=True, callback=verify_string_not_empty, help=param_meanings["deployment_id"])
 @click.option(
-    "--deployment_location", required=True, callback=verify_string_not_empty, help=param_meanings["deployment_location"]
+    "--deployment-id",
+    required=True,
+    type=str,
+    callback=verify_string_not_empty,
+    help="The Code/ID for the specific deployment.",
 )
 @click.option(
-    "--config_location",
+    "--data-directory",
+    required=True,
+    type=click.Path(exists=True, file_okay=False, path_type=Path),
+    help="Full path to the directory where files to be uploaded are stored.",
+)
+@click.option(
+    "--config-file",
     required=True,
     type=click.Path(exists=True, dir_okay=False, path_type=Path),
-    help=param_meanings["config_location"],
+    help="Full path to config file used for authentication.",
 )
-@click.option("--non_production", default=False, show_default=True, help=param_meanings["non_production"])
-@click.option("--dry_run", default=False, show_default=True, help=param_meanings["dry_run"])
+@click.option(
+    "--production/--non-production",
+    "is_production",
+    default=False,
+    show_default=True,
+    help="Pass this flag to run the application in a non-production environment.",
+)
+@click.option(
+    "--dry-run/--no-dry-run",
+    "is_dry_run",
+    default=False,
+    show_default=True,
+    help="Pass this flag to perform a dry-run of the application.",
+)
 def cli_main(
     deployment_id: str,
-    deployment_location: str,
-    config_location: Path,
-    non_production: bool,
-    dry_run: bool,
+    data_directory: Path,
+    config_file: Path,
+    is_production: bool,
+    is_dry_run: bool,
 ) -> None:
     """Accepts command line arguments and passes them to verification function."""
-    del deployment_id, deployment_location, non_production, dry_run
-    config = load_configuration_file(config_location)
+    del deployment_id, data_directory, is_production, is_dry_run
+    config = load_configuration_file(config_file)
     # follow the Auth device flow to allow a user to log in via a 3rd party system
     device_code_dtls = device_auth.authenticate(config)
     click.echo(
