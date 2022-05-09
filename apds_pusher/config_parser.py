@@ -1,4 +1,6 @@
 """Parser for APDS pusher configuration files."""
+from __future__ import annotations
+
 from dataclasses import dataclass, fields
 from typing import Any, Dict, List
 
@@ -30,7 +32,7 @@ class Configuration:
     archive_checker_frequency: int
 
     @classmethod
-    def from_dict_validated(cls, data_dict: Dict[str, Any]) -> "Configuration":
+    def from_dict_validated(cls, data_dict: Dict[str, Any]) -> Configuration:
         """Instantiate the class from a dictionary."""
         class_fields = {field.name for field in fields(cls)}
         data_fields = set(data_dict.keys())
