@@ -6,7 +6,7 @@ from typing import Any
 
 import click
 
-from apds_pusher import config_parser
+from apds_pusher import config_parser, device_auth
 
 
 def load_configuration_file(config_path: Path) -> config_parser.Configuration:
@@ -73,7 +73,14 @@ def cli_main(
 ) -> None:
     """Accepts command line arguments and passes them to verification function."""
     del deployment_id, deployment_location, non_production, dry_run
-    load_configuration_file(config_location)
+    config = load_configuration_file(config_location)
+    # follow the Auth device flow to allow a user to log in via a 3rd party system
+    device_code_dtls = device_auth.authenticate(config)
+    click.echo(
+        f"URL to authenticate: {device_code_dtls[0]} \
+        \nUser_code : {device_code_dtls[1]} \
+        \nexpires in: {device_code_dtls[2]} seconds"
+    )
 
 
 if __name__ == "__main__":
