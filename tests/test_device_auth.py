@@ -24,6 +24,8 @@ def fixture_pusher_config():
         bodc_archive_url="url",
         file_formats=[".dat"],
         archive_checker_frequency=1000,
+        save_file_location="a_path_to_file",
+        log_file_location="a_path_to_file",
     )
 
 

@@ -3,5 +3,7 @@
   "client_id" : "an_id",
   "bodc_archive_url" : "a_url",
   "file_formats" : ["*.json", "*.csv"],
-  "archive_checker_frequency" : 3600
+  "archive_checker_frequency" : 3600,
+  "save_file_location" : "a_path",
+  "log_file_location" : "a_path"
 }

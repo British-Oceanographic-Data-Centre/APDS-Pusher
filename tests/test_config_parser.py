@@ -15,6 +15,8 @@ def config_dict_fixture():
         bodc_archive_url="url",
         file_formats=[".dat"],
         archive_checker_frequency=1000,
+        save_file_location="a_path",
+        log_file_location="a_path",
     )
 
 
