@@ -54,27 +54,29 @@ def verify_string_not_empty(_: click.Context, param: click.Parameter, value: str
     "--data-directory",
     required=True,
     type=click.Path(exists=True, file_okay=False, path_type=Path),
-    help="Full path to the directory where files to be uploaded are stored.",
+    help="Full path to the directory where files to be uploaded are stored. "
+    "This directory will be searched recursively for files to send.",
 )
 @click.option(
     "--config-file",
     required=True,
     type=click.Path(exists=True, dir_okay=False, path_type=Path),
-    help="Full path to config file used for authentication.",
+    help="Full path to configuration file controlling the running of the application.",
 )
 @click.option(
     "--production/--non-production",
     "is_production",
     default=False,
     show_default=True,
-    help="Pass this flag to run the application in a non-production environment.",
+    help="Pass this flag to toggle between pushing data to the production or non-production (test) systems.",
 )
 @click.option(
     "--dry-run/--no-dry-run",
     "is_dry_run",
     default=False,
     show_default=True,
-    help="Pass this flag to perform a dry-run of the application.",
+    help="Pass this flag to perform a dry-run of the application. "
+    "This mode will imitate a transfer but will only print the files to be sent, and not send them.",
 )
 def cli_main(
     deployment_id: str,
@@ -83,7 +85,7 @@ def cli_main(
     is_production: bool,
     is_dry_run: bool,
 ) -> None:
-    """Accepts command line arguments and passes them to verification function."""
+    """This application allows organisations to continuously push data to BODC from the command line."""
     del deployment_id, data_directory, is_production, is_dry_run
     config = load_configuration_file(config_file)
     # follow the Auth device flow to allow a user to log in via a 3rd party system
