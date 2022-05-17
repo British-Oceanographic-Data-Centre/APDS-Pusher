@@ -95,6 +95,15 @@ def cli_main(
         \nUser_code : {device_code_dtls[1]} \
         \nexpires in: {device_code_dtls[2]} seconds"
     )
+    device_response = {
+        "device_code": device_code_dtls[3],
+        "interval": device_code_dtls[4],
+        "expires_in": device_code_dtls[2],
+    }
+
+    access_token = device_auth.receive_access_token_from_device_code(device_response, config)
+    # call the file archival passing the access_token
+    print(access_token)
 
 
 if __name__ == "__main__":

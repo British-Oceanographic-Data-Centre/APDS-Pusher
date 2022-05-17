@@ -12,6 +12,7 @@ def config_dict_fixture():
     return dict(
         client_id="an_id",
         auth0_tenant="a_tenant",
+        client_secret="a secret",
         bodc_archive_url="url",
         file_formats=[".dat"],
         archive_checker_frequency=1000,
