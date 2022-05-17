@@ -25,8 +25,12 @@ class BlankValueError(ParserException):
 class Configuration:
     """Dataclass to hold configuration."""
 
+    # pylint: disable=too-many-instance-attributes
+    # Eight is required in this case.
+
     auth0_tenant: str
     client_id: str
+    client_secret: str
     bodc_archive_url: str
     file_formats: List[str]
     archive_checker_frequency: int

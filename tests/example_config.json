@@ -1,9 +1,13 @@
 {
   "auth0_tenant": "a_tenant",
-  "client_id" : "an_id",
-  "bodc_archive_url" : "a_url",
-  "file_formats" : ["*.json", "*.csv"],
-  "archive_checker_frequency" : 3600,
-  "save_file_location" : "a_path",
-  "log_file_location" : "a_path"
+  "client_id": "an_id",
+  "client_secret": "a secret",
+  "bodc_archive_url": "a_url",
+  "file_formats": [
+    "*.json",
+    "*.csv"
+  ],
+  "archive_checker_frequency": 3600,
+  "save_file_location": "a_path",
+  "log_file_location": "a_path"
 }
