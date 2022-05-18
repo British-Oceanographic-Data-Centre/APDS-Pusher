@@ -5,10 +5,13 @@ from pathlib import Path
 
 import click
 
-from apds_pusher import config_parser, device_auth
+from apds_pusher import device_auth, filepusher
+
+# import config_parser
+from apds_pusher.config_parser import Configuration, ParserException
 
 
-def load_configuration_file(config_path: Path) -> config_parser.Configuration:
+def load_configuration_file(config_path: Path) -> Configuration:
     """Load a configuration file JSON into a Configuration instance."""
     # load the json file or exit if it's bad
     try:
@@ -17,8 +20,8 @@ def load_configuration_file(config_path: Path) -> config_parser.Configuration:
         raise click.ClickException(f"Configuration failed to load from file: {config_path})") from None
 
     try:
-        config = config_parser.Configuration.from_dict_validated(config_dict)
-    except config_parser.ParserException as exc:
+        config = Configuration.from_dict_validated(config_dict)
+    except ParserException as exc:
         raise click.ClickException(exc.args[0]) from None
 
     click.echo(message="Configuration accepted")
@@ -54,29 +57,27 @@ def verify_string_not_empty(_: click.Context, param: click.Parameter, value: str
     "--data-directory",
     required=True,
     type=click.Path(exists=True, file_okay=False, path_type=Path),
-    help="Full path to the directory where files to be uploaded are stored. "
-    "This directory will be searched recursively for files to send.",
+    help="Full path to the directory where files to be uploaded are stored.",
 )
 @click.option(
     "--config-file",
     required=True,
     type=click.Path(exists=True, dir_okay=False, path_type=Path),
-    help="Full path to configuration file controlling the running of the application.",
+    help="Full path to config file used for authentication.",
 )
 @click.option(
     "--production/--non-production",
     "is_production",
     default=False,
     show_default=True,
-    help="Pass this flag to toggle between pushing data to the production or non-production (test) systems.",
+    help="Pass this flag to run the application in a non-production environment.",
 )
 @click.option(
     "--dry-run/--no-dry-run",
     "is_dry_run",
     default=False,
     show_default=True,
-    help="Pass this flag to perform a dry-run of the application. "
-    "This mode will imitate a transfer but will only print the files to be sent, and not send them.",
+    help="Pass this flag to perform a dry-run of the application.",
 )
 def cli_main(
     deployment_id: str,
@@ -85,25 +86,36 @@ def cli_main(
     is_production: bool,
     is_dry_run: bool,
 ) -> None:
-    """This application allows organisations to continuously push data to BODC from the command line."""
-    del deployment_id, data_directory, is_production, is_dry_run
+    """Accept command line arguments and passes them to verification function."""
     config = load_configuration_file(config_file)
     # follow the Auth device flow to allow a user to log in via a 3rd party system
     device_code_dtls = device_auth.authenticate(config)
+
+    # Construct dictionary to hold data presented to end user for Authenticationm
+    device_code_keys = ["url", "user_code", "expires_in", "device_code", "interval"]
+    device_response = dict(zip(device_code_keys, device_code_dtls))
+
     click.echo(
-        f"URL to authenticate: {device_code_dtls[0]} \
-        \nUser_code : {device_code_dtls[1]} \
-        \nexpires in: {device_code_dtls[2]} seconds"
+        f"URL to authenticate: {device_response['url']} \
+        \nUser code: {device_response['user_code']} \
+        \nExpires in: {device_response['expires_in']} seconds"
     )
-    device_response = {
-        "device_code": device_code_dtls[3],
-        "interval": device_code_dtls[4],
-        "expires_in": device_code_dtls[2],
+
+    # Filter dictionary to send necessary keys to get access token
+    response = {
+        key: value for key, value in device_response.items() if key in ["device_code", "interval", "expires_in"]
     }
 
-    access_token = device_auth.receive_access_token_from_device_code(device_response, config)
+    # Send dictionary and config to complete authentication
+    tokens = device_auth.receive_access_token_from_device_code(response, config)
+    access_token = tokens["access_token"]
+    refresh_token = tokens["refresh_token"]
+
     # call the file archival passing the access_token
-    print(access_token)
+    pusher = filepusher.FilePusher(
+        deployment_id, data_directory, config, is_production, is_dry_run, access_token, refresh_token
+    )
+    pusher.run()
 
 
 if __name__ == "__main__":

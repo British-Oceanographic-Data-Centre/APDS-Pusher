@@ -29,7 +29,7 @@ def get_device_code(client_id: str, auth_domain: str) -> Dict:
     """
     payload = {
         "scope": "openid email offline_access",
-        "audience": "apds.livbodcdatadev.bodc.me",
+        "audience": "prd.apds.bodc.me/pusher",
         "client_id": client_id,
     }
     headers = {"content-type": "application/json"}

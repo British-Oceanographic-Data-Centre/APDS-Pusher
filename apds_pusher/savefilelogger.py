@@ -1,4 +1,4 @@
-"""A logging class used keep track files of sent files."""
+"""Logging class used keep track files of sent files."""
 import sys
 from datetime import datetime as dt
 from pathlib import Path
@@ -12,7 +12,7 @@ class FileLogger:
         self.set_filelog_filename(save_file_location, deployment_location, deployment_id)
 
     def set_filelog_filename(self, save_file_location: Path, deployment_location: Path, deployment_id: str) -> None:
-        """A method to determine and set the save location of the savefile.
+        """Determine and set the save location of the savefile.
 
         It will attempt to create the file in 3 locations, stopping when successful
         - The location specified in the config file (save_file_location)
@@ -36,7 +36,7 @@ class FileLogger:
         self.file_path = log_file_name
 
     def write_to_log_file(self, filename: str) -> None:
-        """Writes filename and current date/time to file.
+        """Write filename and current date/time to file.
 
         Args:
             filename: The full path to the file that has been submitted.

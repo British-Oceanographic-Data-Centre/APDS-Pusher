@@ -4,7 +4,7 @@ from pathlib import Path
 import click
 import pytest
 
-from apds_pusher import config_parser, main
+from apds_pusher import __main__, config_parser
 
 
 @pytest.fixture(name="config_path")
@@ -15,7 +15,7 @@ def config_path_fixture():
 
 def test_load_configuration_file(config_path):
     """Check that the correct data is returned from a call to load the config file."""
-    config = main.load_configuration_file(config_path)
+    config = __main__.load_configuration_file(config_path)
 
     assert isinstance(config, config_parser.Configuration)
 
@@ -33,4 +33,4 @@ def test_click_exception_on_parse_error(mocker, config_path, exception_type):
     mocker.patch.object(config_parser.Configuration, "from_dict_validated", side_effect=exception_type("an exception"))
 
     with pytest.raises(click.ClickException):
-        main.load_configuration_file(config_path)
+        __main__.load_configuration_file(config_path)
