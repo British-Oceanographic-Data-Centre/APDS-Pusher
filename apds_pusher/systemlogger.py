@@ -7,14 +7,14 @@ class SystemLogger:
     """A class used to log messages to console and file."""
 
     def __init__(self, deployment_id: str, log_file_location: Path, deployment_location: Path) -> None:
-        """Sets up the SystemLogger."""
+        """Set up the SystemLogger."""
         self.logger = logging.Logger("APDS")
         self.set_systemlog_filename(deployment_id, log_file_location, deployment_location)
         self.configure_console_logger()
         self.configure_file_logger()
 
     def set_systemlog_filename(self, deployment_id: str, log_file_location: Path, deployment_location: Path) -> None:
-        """Creates the logfile name.
+        """Create the logfile name.
 
         It will attempt to create the filename by looking in 3 locations, stopping when successful
         - The location specified in the config file (log_file_location)
@@ -40,7 +40,7 @@ class SystemLogger:
         self.log_file_name = log_file_name
 
     def configure_file_logger(self) -> None:
-        """Sets up logging to file."""
+        """Set up logging to file."""
         file_out = logging.FileHandler(self.log_file_name)
         file_out.setLevel(logging.DEBUG)
         file_format = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -48,7 +48,7 @@ class SystemLogger:
         self.logger.addHandler(file_out)
 
     def configure_console_logger(self) -> None:
-        """Sets up logging to the console."""
+        """Set up logging to the console."""
         console_out = logging.StreamHandler()
         console_out.setLevel(logging.DEBUG)
         console_format = logging.Formatter("%(name)s - %(levelname)s - %(message)s")
@@ -56,21 +56,21 @@ class SystemLogger:
         self.logger.addHandler(console_out)
 
     def info(self, msg: str) -> None:
-        """Adds an information line to the console and file."""
+        """Add an information line to the console and file."""
         self.logger.info(msg)
 
     def warn(self, msg: str) -> None:
-        """Adds a warning line to the console and file."""
+        """Add a warning line to the console and file."""
         self.logger.warning(msg)
 
     def error(self, msg: str) -> None:
-        """Adds an error line to the console and file."""
+        """Add an error line to the console and file."""
         self.logger.error(msg)
 
     def critical(self, msg: str) -> None:
-        """Adds a critcal line to the console and file."""
+        """Add a critcal line to the console and file."""
         self.logger.critical(msg)
 
     def debug(self, msg: str) -> None:
-        """Adds a debug line to the console and file."""
+        """Add a debug line to the console and file."""
         self.logger.debug(msg)

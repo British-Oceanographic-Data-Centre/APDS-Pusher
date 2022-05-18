@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, fields
+from pathlib import Path
 from typing import Any, Dict, List
 
 
@@ -34,8 +35,8 @@ class Configuration:
     bodc_archive_url: str
     file_formats: List[str]
     archive_checker_frequency: int
-    save_file_location: str
-    log_file_location: str
+    save_file_location: Path
+    log_file_location: Path
 
     @classmethod
     def from_dict_validated(cls, data_dict: Dict[str, Any]) -> Configuration:
