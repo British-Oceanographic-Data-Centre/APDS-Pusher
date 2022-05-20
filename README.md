@@ -74,6 +74,70 @@ This should display the help for the tool (see also next section) if it is insta
 
 ## Usage instructions
 
+The `APDS-Pusher` tool provides several options for usage from the command line, and once running
+will periodically check for new files to be sent to the BODC archive.
+
+In order to send data using the tool, you will need the following:
+
+1. The identifier of the deployment to which your data belongs,
+2. The path to your deployment data directory, and
+3. A configuration file which defines some global settings for the tool.
+
+The configuration file should have the following information (although the contents might differ
+depending on your particular use case) and be saved as a `.json` file:
+
+```json
+{
+    "auth0_tenant": "bodc.eu.auth0.com",
+    "client_id" : "YOUR_CLIENT_ID",
+    "client_secret": "YOUR_CLIENT_SECRET",
+    "bodc_archive_url" : "test_archive_url",
+    "file_formats" : [".sbd", ".tbd", ".cac"],
+    "archive_checker_frequency" : 100,
+    "save_file_location": "/path/to/output/directory",
+    "log_file_location": "/path/to/output/directory"
+}
+```
+
+An explanation of each field follows, if you are uncertain as to what values they should take,
+contact BODC for an example file:
+
+- `auth0_tenant`: This is the name of the service used to authenticate the tool with BODC.
+- `client_id`: This is the name of the organisation you will send the data as, which is used for
+authentication, as provided by BODC.
+- `client_secret`: This is the authentication secret for the organisation, as provided by BODC.
+- `bodc_archive_url`: This is the URL which files will be pushed to.
+- `file_formats`: A list of file extensions. When searching for files to be sent,
+only files with these extensions will be sent for upload.
+- `archive_checker_frequency`: The number of seconds between attempts to upload new files.
+- `save_file_location`: A path to the directory where a list of uploaded files will be written to disk.
+- `log_file_location`: A path to the directory where the logs of `APDS-Pusher` will be written to disk.
+
+### Example
+
+An example invocation of the tool is shown below:
+
+```shell
+bodc-archive-pusher --deployment-id 123 --data-directory /data/dep-123 --config-file /data/config.json --production --no-dry-run
+```
+
+The options used above are explained below:
+
+- `--deployment-id 123`: This tells the tool that the data being uploaded belongs to deployment `123`.
+- `--data-directory /data/dep-123`: This tells the tool to periodically scan the directory
+`/data/dep-123` for new data, and send it to the BODC archive.
+- `--config-file /data/config.json`: This tells the tool that the configuration information is
+stored in the file located at `/data/config.json`.
+- `--production`: This tells the tool to upload the data to the production archive.
+Alternatively, for testing, you can use `--non-production` which will upload to the test archive.
+Refer to the [APDS-Pusher options](#command-line-options) for the default value if this is not specified.
+- `--no-dry-run`: This tells the tool to actually perform the file upload.
+Alternatively, if you just wish to see which files would be uploaded (but not actually upload them),
+you can use the `--dry-run` flag instead which will print the files to the terminal.
+Refer to the [APDS-Pusher options](#command-line-options) for the default value if this is not specified.
+
+### Command line options
+
 [//]: # (This is output from the CLI --help command and should be kept up-to-date with that output)
 
 ```
