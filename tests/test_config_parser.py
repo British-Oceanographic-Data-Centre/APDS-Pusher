@@ -1,5 +1,6 @@
 """Test configuration parser."""
 from dataclasses import asdict
+from pathlib import Path
 
 import pytest
 
@@ -50,3 +51,22 @@ def test_blank_value_error(config_dict):
 
     with pytest.raises(config_parser.BlankValueError):
         config_parser.Configuration.from_dict_validated(config_dict)
+
+
+def test_pathfields_are_converted_to_paths(config_dict):
+    """Check that the save/log locations are correctly returned as Paths."""
+    config_dict = config_parser.Configuration.from_dict_validated(config_dict)
+    assert isinstance(config_dict.save_file_location, Path)
+    assert isinstance(config_dict.log_file_location, Path)
+
+
+@pytest.mark.parametrize("bad_path", [1, {"a": "b"}, ("a", "b"), 1.2])
+@pytest.mark.parametrize("path_field", ["save_file_location", "log_file_location"])
+def test_bad_pathfields_raise_exception(config_dict, path_field, bad_path):
+    """Check that bad values for save/log locations raise the correct exception."""
+    config_dict[path_field] = bad_path
+
+    with pytest.raises(config_parser.InvalidPathError) as exc:
+        config_dict = config_parser.Configuration.from_dict_validated(config_dict)
+
+    assert exc.value.args[0] == f"{path_field} is an invalid path."
