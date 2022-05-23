@@ -6,8 +6,6 @@ from pathlib import Path
 import click
 
 from apds_pusher import device_auth, filepusher
-
-# import config_parser
 from apds_pusher.config_parser import Configuration, ParserException
 
 
@@ -70,21 +68,29 @@ def verify_string_not_empty(_: click.Context, param: click.Parameter, value: str
     "is_production",
     default=False,
     show_default=True,
-    help="Pass this flag to run the application in a non-production environment.",
+    help="Use this flag to switch between production and non-production environments.",
 )
 @click.option(
     "--dry-run/--no-dry-run",
     "is_dry_run",
     default=False,
     show_default=True,
-    help="Pass this flag to perform a dry-run of the application.",
+    help="Use this flag to switch between a regular run and a dry run send of files.",
 )
-def cli_main(
+@click.option(
+    "--recursive/--non-recursive",
+    "is_recursive",
+    default=True,
+    show_default=True,
+    help="Use this flag to switch between recursive and non-recursive searching of files.",
+)
+def cli_main(  # pylint: disable=too-many-arguments
     deployment_id: str,
     data_directory: Path,
     config_file: Path,
     is_production: bool,
     is_dry_run: bool,
+    is_recursive: bool,
 ) -> None:
     """Accept command line arguments and passes them to verification function."""
     config = load_configuration_file(config_file)
@@ -113,7 +119,7 @@ def cli_main(
 
     # call the file archival passing the access_token
     pusher = filepusher.FilePusher(
-        deployment_id, data_directory, config, is_production, is_dry_run, access_token, refresh_token
+        deployment_id, data_directory, config, is_production, is_dry_run, is_recursive, access_token, refresh_token
     )
     pusher.run()
 

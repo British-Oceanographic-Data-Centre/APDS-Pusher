@@ -1,5 +1,6 @@
 """Program to orchestrate push of files to the Archive API."""
 from pathlib import Path
+from typing import List
 
 from apds_pusher.config_parser import Configuration
 from apds_pusher.savefilelogger import FileLogger
@@ -22,8 +23,9 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
         deployment_id: str,
         deployment_location: Path,
         config: Configuration,
-        non_production: bool,
-        dry_run: bool,
+        is_production: bool,
+        is_recursive: bool,
+        is_dry_run: bool,
         access_token: str,
         refresh_token: str,
     ):
@@ -31,8 +33,9 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
         self.deployment_id = deployment_id
         self.deployment_location = deployment_location
         self.config = config
-        self.non_production = non_production
-        self.dry_run = dry_run
+        self.is_production = is_production
+        self.is_recursive = is_recursive
+        self.is_dry_run = is_dry_run
         self.access_token = access_token
         self.refresh_token = refresh_token
 
@@ -41,7 +44,7 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
 
     def run(self) -> None:
         """Rrigger the sending of files, or a dry run."""
-        if self.dry_run:
+        if self.is_dry_run:
             self.dry_run_send()
         else:
             self.send_files_to_api()
@@ -52,13 +55,15 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
         self.file_logger = FileLogger(self.config.save_file_location, self.deployment_location, self.deployment_id)
         self.system_logger.info(f"Save file located at: {self.file_logger.file_path}")
 
-    def retrieve_file_paths(self) -> list:
+    def retrieve_file_paths(self) -> List[Path]:
         """Retrieve a list of absolute paths for desired glider files."""
-        file_paths = []
+        recursive_state = "Active" if self.is_recursive else "Not active"
+        self.system_logger.info(f"Recursive folder searching is {recursive_state}")
 
+        file_paths: List[Path] = []
+        glob_prefix = "**/*" if self.is_recursive else "*"
         for file_format in self.config.file_formats:
-            for path in Path(self.deployment_location).rglob(f"*{file_format}"):
-                file_paths.append(path)
+            file_paths.extend(self.deployment_location.glob(f"{glob_prefix}{file_format}"))
 
         return file_paths
 
