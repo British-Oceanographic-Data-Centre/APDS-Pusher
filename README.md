@@ -147,22 +147,24 @@ Usage: bodc-archive-pusher [OPTIONS]
   the command line.
 
 Options:
-  --deployment-id TEXT            The Code/ID for the specific deployment.
+  --deployment-id TEXT            The Code/ID for the specific
+                                  deployment.  [required]
+  --data-directory DIRECTORY      Full path to the directory where
+                                  files to be uploaded are stored.
                                   [required]
-  --data-directory DIRECTORY      Full path to the directory where files to be
-                                  uploaded are stored. This directory will be
-                                  searched recursively for files to send.
-                                  [required]
-  --config-file FILE              Full path to configuration file controlling
-                                  the running of the application.  [required]
+  --config-file FILE              Full path to config file used for
+                                  authentication.  [required]
   --production / --non-production
-                                  Pass this flag to toggle between pushing
-                                  data to the production or non-production
-                                  (test) systems.  [default: non-production]
-  --dry-run / --no-dry-run        Pass this flag to perform a dry-run of the
-                                  application. This mode will imitate a
-                                  transfer but will only print the files to be
-                                  sent, and not send them.  [default: no-dry-
-                                  run]
+                                  Use this flag to switch between
+                                  production and non-production
+                                  environments.  [default: non-
+                                  production]
+  --dry-run / --no-dry-run        Use this flag to switch between a
+                                  regular run and a dry run send of
+                                  files.  [default: no-dry-run]
+  --recursive / --non-recursive   Use this flag to switch between
+                                  recursive and non-recursive
+                                  searching of files.  [default:
+                                  recursive]
   --help                          Show this message and exit.
 ```
