@@ -72,6 +72,7 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
         files_currently_in_archive = self.get_existing_glider_files_for_deployment()
         duplicates, files_added = 0, 0
         self.system_logger.info(f"Starting a dry run for deployment id: {self.deployment_id}")
+        self.system_logger.info(f"There are currently {len(files_currently_in_archive)} files in the archive.")
 
         for file in self.retrieve_file_paths():
             if file in files_currently_in_archive:
@@ -81,7 +82,9 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
                 self.system_logger.info(f"{file} will be sent to the archive in non dry-run mode")
                 files_added += 1
 
-        self.system_logger.info(f"A total of {files_added} would have been sent to the Archive in non dry-run mode")
+        self.system_logger.info(
+            f"A total of {files_added} files would have been sent to the Archive in non dry-run mode"
+        )
         self.system_logger.info(f"A total of {duplicates} duplicates were detected")
 
     def get_existing_glider_files_for_deployment(self) -> set:
@@ -90,10 +93,9 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
             files_in_current_deployment = return_existing_glider_files(self.deployment_id)
         except HoldingsAccessError:
             files_in_current_deployment = set()
-            warning_string = (
+            self.system_logger.warn(
                 "Unable to get existing files. Checks can't be done to ensure file is not already in archive."
             )
-            self.system_logger.warn(warning_string)
         else:
             self.system_logger.info(f"Filenames retrieved successfully for deployment: {self.deployment_id}")
 
@@ -109,9 +111,15 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
         files_to_send_to_archive = self.retrieve_file_paths()
         self.system_logger.info(f"The program will attempt to add {len(files_to_send_to_archive )} to the archive")
 
+        self.system_logger.info(
+            f"Currently {len(files_currently_in_archive)} files in archive for deploymentID: {self.deployment_id}"
+        )
+
+        duplicates, files_added = 0, 0
         for file in files_to_send_to_archive:  # pylint: disable=too-many-nested-blocks
             self.system_logger.info(f"Starting file transfer of {file} to BODC.")
             if file in files_currently_in_archive:
+                duplicates += 1
                 self.system_logger.warn(f"{file} already exists in deployment")
             else:
                 attempts = 0
@@ -119,6 +127,7 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
                     try:
                         response = send_to_archive_api(file, self.deployment_id, self.access_token)
                         if response == "Success":
+                            files_added += 1
                             self.file_logger.write_to_log_file(str(file))
                             self.system_logger.info(f"File transfer complete for: {file}")
                             break
@@ -129,3 +138,8 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
                         self.system_logger.error(f"File transfer Failed for: {file}")
                     finally:
                         attempts += 1
+
+        self.system_logger.info(
+            f"There are {files_added + len(files_currently_in_archive)} files in archive after {files_added} new files"
+        )
+        self.system_logger.info(f"A total of {duplicates} duplicates were detected")
