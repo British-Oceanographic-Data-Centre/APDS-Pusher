@@ -109,7 +109,7 @@ authentication, as provided by BODC.
 - `bodc_archive_url`: This is the URL which files will be pushed to.
 - `file_formats`: A list of file extensions. When searching for files to be sent,
 only files with these extensions will be sent for upload.
-- `archive_checker_frequency`: The number of seconds between attempts to upload new files.
+- `archive_checker_frequency`: The number of minutes between attempts to upload new files.
 - `save_file_location`: A path to the directory where a list of uploaded files will be written to disk.
 - `log_file_location`: A path to the directory where the logs of `APDS-Pusher` will be written to disk.
 
