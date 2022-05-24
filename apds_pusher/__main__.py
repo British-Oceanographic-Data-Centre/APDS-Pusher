@@ -119,7 +119,7 @@ def cli_main(  # pylint: disable=too-many-arguments
 
     # call the file archival passing the access_token
     pusher = filepusher.FilePusher(
-        deployment_id, data_directory, config, is_production, is_dry_run, is_recursive, access_token, refresh_token
+        deployment_id, data_directory, config, is_production, is_recursive, is_dry_run, access_token, refresh_token
     )
     pusher.run()
 
