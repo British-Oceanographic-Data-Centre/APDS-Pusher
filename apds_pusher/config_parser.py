@@ -38,7 +38,7 @@ class Configuration:
     client_secret: str
     bodc_archive_url: str
     file_formats: List[str]
-    archive_checker_frequency: int
+    archive_checker_frequency: int  #: This should be passed in as minutes
     save_file_location: Path
     log_file_location: Path
 

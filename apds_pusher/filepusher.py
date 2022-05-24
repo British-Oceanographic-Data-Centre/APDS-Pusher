@@ -1,5 +1,6 @@
 """Program to orchestrate push of files to the Archive API."""
 from pathlib import Path
+from time import sleep
 from typing import List
 
 from apds_pusher.config_parser import Configuration
@@ -43,11 +44,28 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
         self.initialise_logging()
 
     def run(self) -> None:
-        """Rrigger the sending of files, or a dry run."""
-        if self.is_dry_run:
-            self.dry_run_send()
-        else:
-            self.send_files_to_api()
+        """Trigger a loop which controls sending files or a dry run.
+
+        archive_checker_frequency is determined in the config file.
+        The program is designed to perform a send of files, wait
+        for x minutes and perform a new send.
+        """
+        self.system_logger.info(
+            f"Program will wait {self.config.archive_checker_frequency} minutes between checking for new files."
+        )
+        file_push_cycles = 1
+
+        while True:
+            self.system_logger.info(f"Starting cycle number: {file_push_cycles}")
+
+            if self.is_dry_run:
+                self.dry_run_send()
+            else:
+                self.send_files_to_api()
+
+            self.system_logger.info(f"Cycle number {file_push_cycles} complete.")
+            file_push_cycles += 1
+            sleep(self.config.archive_checker_frequency * 60)
 
     def initialise_logging(self) -> None:
         """Sets up the file and system logging."""
