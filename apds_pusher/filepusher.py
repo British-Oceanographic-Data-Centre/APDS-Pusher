@@ -90,7 +90,7 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
     def get_existing_glider_files_for_deployment(self) -> set:
         """Handle the call to the program which retrieves the set of existing glider filenames."""
         try:
-            files_in_current_deployment = return_existing_glider_files(self.deployment_id)
+            files_in_current_deployment = return_existing_glider_files(self.config.bodc_archive_url, self.deployment_id)
         except HoldingsAccessError:
             files_in_current_deployment = set()
             self.system_logger.warn(
@@ -125,7 +125,9 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
                 attempts = 0
                 while attempts < 3:
                     try:
-                        response = send_to_archive_api(file, self.deployment_id, self.access_token)
+                        response = send_to_archive_api(
+                            file, self.deployment_id, self.access_token, self.config.bodc_archive_url
+                        )
                         if response == "Success":
                             files_added += 1
                             self.file_logger.write_to_log_file(str(file))
