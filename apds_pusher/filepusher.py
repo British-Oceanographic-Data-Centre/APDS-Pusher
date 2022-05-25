@@ -13,7 +13,7 @@ from apds_pusher.send_to_archive import (
     send_to_archive_api,
 )
 from apds_pusher.systemlogger import SystemLogger
-from apds_pusher.token_refresher import token_refresher_call
+from apds_pusher.token_refresher import get_access_token_from_refresh_token
 
 
 class FilePusher:  # pylint: disable=too-many-instance-attributes
@@ -121,7 +121,7 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
 
     def _token_refresh(self) -> None:
         """Private method to refresh access token."""
-        self.access_token = token_refresher_call(self.refresh_token, self.config)["access_token"]
+        self.access_token = get_access_token_from_refresh_token(self.refresh_token, self.config)
 
     def send_files_to_api(self) -> None:
         """Manages the sending of files to the API."""
