@@ -56,16 +56,26 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
         file_push_cycles = 1
 
         while True:
-            self.system_logger.info(f"Starting cycle number: {file_push_cycles}")
+            # start archival if there was no request to stop the archival
+            if self.check_deployment_not_stopped(self.deployment_id):
+                self.system_logger.info(f"Starting cycle number: {file_push_cycles}")
 
-            if self.is_dry_run:
-                self.dry_run_send()
+                if self.is_dry_run:
+                    self.dry_run_send()
+                else:
+                    self.send_files_to_api()
+
+                self.system_logger.info(f"Cycle number {file_push_cycles} complete.")
+                file_push_cycles += 1
+                sleep(self.config.archive_checker_frequency * 60)
             else:
-                self.send_files_to_api()
+                raise SystemExit
 
-            self.system_logger.info(f"Cycle number {file_push_cycles} complete.")
-            file_push_cycles += 1
-            sleep(self.config.archive_checker_frequency * 60)
+    def check_deployment_not_stopped(self, deployment_id: str) -> bool:
+        """Check if there was a request to stop the archival for the deployment id."""
+        active_deployments_location = self.config.deployment_location
+        deployment_id_file = active_deployments_location / f"{deployment_id}.txt"
+        return deployment_id_file.exists()
 
     def initialise_logging(self) -> None:
         """Sets up the file and system logging."""

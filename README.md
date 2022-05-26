@@ -76,12 +76,19 @@ This should display the help for the tool (see also next section) if it is insta
 
 The `APDS-Pusher` tool provides several options for usage from the command line, and once running
 will periodically check for new files to be sent to the BODC archive.
+The tool can be used to start the archival process for a particular deployment-id or stop the archival
+for a particular deployment-id.
 
-In order to send data using the tool, you will need the following:
+In order to start the archival process to send data using the tool, you will need the following:
 
 1. The identifier of the deployment to which your data belongs,
 2. The path to your deployment data directory, and
 3. A configuration file which defines some global settings for the tool.
+
+In order to stop the archival process you will need the following:
+
+1. The identifier of the deployment which needs to stop archiving,
+2. A configuration file which defines some global settings for the tool.
 
 The configuration file should have the following information (although the contents might differ
 depending on your particular use case) and be saved as a `.json` file:
@@ -118,7 +125,8 @@ only files with these extensions will be sent for upload.
 An example invocation of the tool is shown below:
 
 ```shell
-bodc-archive-pusher --deployment-id 123 --data-directory /data/dep-123 --config-file /data/config.json --production --no-dry-run
+bodc-archive-pusher start --deployment-id 123 --data-directory /data/dep-123 --config-file /data/config.json --production --no-dry-run
+bodc-archive-pusher stop --deployment-id 123 --config-file /data/config.json
 ```
 
 The options used above are explained below:
