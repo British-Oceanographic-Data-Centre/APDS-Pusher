@@ -76,12 +76,19 @@ This should display the help for the tool (see also next section) if it is insta
 
 The `APDS-Pusher` tool provides several options for usage from the command line, and once running
 will periodically check for new files to be sent to the BODC archive.
+The tool can be used to start the archival process for a particular deployment-id or stop the archival
+for a particular deployment-id.
 
-In order to send data using the tool, you will need the following:
+In order to start the archival process to send data using the tool, you will need the following:
 
 1. The identifier of the deployment to which your data belongs,
 2. The path to your deployment data directory, and
 3. A configuration file which defines some global settings for the tool.
+
+In order to stop the archival process you will need the following:
+
+1. The identifier of the deployment which needs to stop archiving,
+2. A configuration file which defines some global settings for the tool.
 
 The configuration file should have the following information (although the contents might differ
 depending on your particular use case) and be saved as a `.json` file:
@@ -109,7 +116,7 @@ authentication, as provided by BODC.
 - `bodc_archive_url`: This is the URL which files will be pushed to.
 - `file_formats`: A list of file extensions. When searching for files to be sent,
 only files with these extensions will be sent for upload.
-- `archive_checker_frequency`: The number of seconds between attempts to upload new files.
+- `archive_checker_frequency`: The number of minutes between attempts to upload new files.
 - `save_file_location`: A path to the directory where a list of uploaded files will be written to disk.
 - `log_file_location`: A path to the directory where the logs of `APDS-Pusher` will be written to disk.
 
@@ -118,7 +125,8 @@ only files with these extensions will be sent for upload.
 An example invocation of the tool is shown below:
 
 ```shell
-bodc-archive-pusher --deployment-id 123 --data-directory /data/dep-123 --config-file /data/config.json --production --no-dry-run
+bodc-archive-pusher start --deployment-id 123 --data-directory /data/dep-123 --config-file /data/config.json --production --no-dry-run
+bodc-archive-pusher stop --deployment-id 123 --config-file /data/config.json
 ```
 
 The options used above are explained below:
@@ -147,22 +155,24 @@ Usage: bodc-archive-pusher [OPTIONS]
   the command line.
 
 Options:
-  --deployment-id TEXT            The Code/ID for the specific deployment.
+  --deployment-id TEXT            The Code/ID for the specific
+                                  deployment.  [required]
+  --data-directory DIRECTORY      Full path to the directory where
+                                  files to be uploaded are stored.
                                   [required]
-  --data-directory DIRECTORY      Full path to the directory where files to be
-                                  uploaded are stored. This directory will be
-                                  searched recursively for files to send.
-                                  [required]
-  --config-file FILE              Full path to configuration file controlling
-                                  the running of the application.  [required]
+  --config-file FILE              Full path to config file used for
+                                  authentication.  [required]
   --production / --non-production
-                                  Pass this flag to toggle between pushing
-                                  data to the production or non-production
-                                  (test) systems.  [default: non-production]
-  --dry-run / --no-dry-run        Pass this flag to perform a dry-run of the
-                                  application. This mode will imitate a
-                                  transfer but will only print the files to be
-                                  sent, and not send them.  [default: no-dry-
-                                  run]
+                                  Use this flag to switch between
+                                  production and non-production
+                                  environments.  [default: non-
+                                  production]
+  --dry-run / --no-dry-run        Use this flag to switch between a
+                                  regular run and a dry run send of
+                                  files.  [default: no-dry-run]
+  --recursive / --non-recursive   Use this flag to switch between
+                                  recursive and non-recursive
+                                  searching of files.  [default:
+                                  recursive]
   --help                          Show this message and exit.
 ```

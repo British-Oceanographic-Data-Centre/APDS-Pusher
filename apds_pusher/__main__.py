@@ -6,9 +6,15 @@ from pathlib import Path
 import click
 
 from apds_pusher import device_auth, filepusher
-
-# import config_parser
 from apds_pusher.config_parser import Configuration, ParserException
+
+
+class DeploymentNotFoundError(Exception):
+    """Exception raised when trying to stop archival for Deployments that have not started ."""
+
+
+class DeploymentError(Exception):
+    """Exception raised when trying to start archival for Deployments."""
 
 
 def load_configuration_file(config_path: Path) -> Configuration:
@@ -17,7 +23,7 @@ def load_configuration_file(config_path: Path) -> Configuration:
     try:
         config_dict = json.loads(config_path.read_text(encoding=sys.getdefaultencoding()))
     except json.JSONDecodeError:
-        raise click.ClickException(f"Configuration failed to load from file: {config_path})") from None
+        raise click.ClickException(f"Configuration failed to load from file: {config_path}") from None
 
     try:
         config = Configuration.from_dict_validated(config_dict)
@@ -45,7 +51,58 @@ def verify_string_not_empty(_: click.Context, param: click.Parameter, value: str
     raise click.BadParameter(f"{param.human_readable_name} must not be empty")
 
 
-@click.command()
+def check_delete_active_deployments(deployment_id: str, config: Configuration) -> bool:
+    """Checks and deletes if archival for a deployment is going on.
+
+    Args:
+        deployment_id: The deployment id to be stopped
+        config:  the config dict to locate the directory of active deployments
+    Returns:
+        True if it found the deployment id else raises error..
+    """
+    active_deployments_location = config.deployment_location
+    if any(active_deployments_location.iterdir()):
+        deployment_id_file = active_deployments_location / f"{deployment_id}.txt"
+
+        try:
+            if deployment_id_file.exists():
+                deployment_id_file.unlink()
+                return True
+            raise DeploymentNotFoundError(f"Cannot stop. No archival started for deployment_id {deployment_id}")
+
+        except FileNotFoundError as file_err:
+            raise DeploymentNotFoundError(
+                f"Cannot stop. No archival started for deployment_id {deployment_id}"
+            ) from file_err
+
+    else:
+        # No archival has begun till now at all.
+        raise DeploymentNotFoundError("No deployments being archived.")
+
+
+def check_add_active_deployments(deployment_id: str, config: Configuration) -> bool:
+    """Checks and adds if archival for a deployment is going on.
+
+    Args:
+        deployment_id: The deployment id to be stopped
+        config:  the config dict to locate the directory of active deployments
+    Returns:
+        True if it the deployment id is added else raises error..
+    """
+    active_deployments_location = config.create_deployment_location()
+    deployment_id_file = active_deployments_location / f"{deployment_id}.txt"
+    try:
+        Path(deployment_id_file).touch(exist_ok=False)
+        return True
+    except FileExistsError as file_err:
+        raise DeploymentError(f"Cannot re-start. Archival is going on for deployment_id {deployment_id}") from file_err
+
+
+@click.group()
+def pusher_group() -> None:
+    """A group of all commands."""
+
+
 @click.option(
     "--deployment-id",
     required=True,
@@ -70,24 +127,34 @@ def verify_string_not_empty(_: click.Context, param: click.Parameter, value: str
     "is_production",
     default=False,
     show_default=True,
-    help="Pass this flag to run the application in a non-production environment.",
+    help="Use this flag to switch between production and non-production environments.",
 )
 @click.option(
     "--dry-run/--no-dry-run",
     "is_dry_run",
     default=False,
     show_default=True,
-    help="Pass this flag to perform a dry-run of the application.",
+    help="Use this flag to switch between a regular run and a dry run send of files.",
 )
-def cli_main(
+@click.option(
+    "--recursive/--non-recursive",
+    "is_recursive",
+    default=True,
+    show_default=True,
+    help="Use this flag to switch between recursive and non-recursive searching of files.",
+)
+@click.command()
+def start(  # pylint: disable=too-many-arguments
     deployment_id: str,
     data_directory: Path,
     config_file: Path,
     is_production: bool,
     is_dry_run: bool,
+    is_recursive: bool,
 ) -> None:
     """Accept command line arguments and passes them to verification function."""
     config = load_configuration_file(config_file)
+
     # follow the Auth device flow to allow a user to log in via a 3rd party system
     device_code_dtls = device_auth.authenticate(config)
 
@@ -111,12 +178,45 @@ def cli_main(
     access_token = tokens["access_token"]
     refresh_token = tokens["refresh_token"]
 
+    # add to list of active deployments
+    if check_add_active_deployments(deployment_id, config):
+        click.echo(f"Archival for deployment id {deployment_id} started")
+
     # call the file archival passing the access_token
     pusher = filepusher.FilePusher(
-        deployment_id, data_directory, config, is_production, is_dry_run, access_token, refresh_token
+        deployment_id, data_directory, config, is_production, is_recursive, is_dry_run, access_token, refresh_token
     )
     pusher.run()
 
 
+# to stop a deployment!
+@click.command()
+@click.option(
+    "--deployment-id",
+    required=True,
+    type=str,
+    callback=verify_string_not_empty,
+    help="The Code/ID for the specific deployment to be removed.",
+)
+@click.option(
+    "--config-file",
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="Full path to config file used for locating the active deployment directory.",
+)
+def stop(
+    deployment_id: str,
+    config_file: Path,
+) -> None:
+    """Accept command line arguments and stops archival for a deployment id."""
+    click.echo(f"Stopping deployment id: {deployment_id}")
+    config = load_configuration_file(config_file)
+    if check_delete_active_deployments(deployment_id, config):
+        click.echo(f"Archival for deployment id {deployment_id} will be stopped")
+
+
+pusher_group.add_command(start)
+pusher_group.add_command(stop)
+
 if __name__ == "__main__":
-    cli_main()  # pylint: disable=no-value-for-parameter
+    pusher_group()  # pylint: disable=no-value-for-parameter

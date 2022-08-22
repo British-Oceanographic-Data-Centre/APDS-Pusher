@@ -1,5 +1,4 @@
 """File to hold logic for refreshing an oauth2 access token."""
-from typing import Dict
 
 import requests
 
@@ -10,7 +9,7 @@ class AccessCodeError(Exception):
     """Exception raised when errors in the refreshed access token."""
 
 
-def token_refresher_call(refresh_token: str, config: Configuration) -> Dict:
+def get_access_token_from_refresh_token(refresh_token: str, config: Configuration) -> str:
     """Retrieve the access tokens for expired tokens using refresh tokens.
 
     The access tokens are returned for expired access tokens
@@ -19,7 +18,7 @@ def token_refresher_call(refresh_token: str, config: Configuration) -> Dict:
        config :A configuration class object
 
     Returns :
-        the response payload containing the new access token
+        the access token
     """
     auth_domain = config.auth0_tenant
     client_id = config.client_id
@@ -48,4 +47,4 @@ def token_refresher_call(refresh_token: str, config: Configuration) -> Dict:
     if "error" in res.json():
         raise AccessCodeError(f"Refresh token not generated. \nError: {res.json()['error_description']}")
     access_token_details = res.json()
-    return access_token_details
+    return access_token_details["access_token"]

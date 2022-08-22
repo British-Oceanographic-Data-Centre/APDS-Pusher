@@ -26,6 +26,10 @@ class InvalidPathError(ParserException):
     """Exception raised when an invalid path is detected in the config."""
 
 
+class InvalidDirectoryError(Exception):
+    """Exception raised when active deployment directory could not be created."""
+
+
 @dataclass
 class Configuration:
     """Dataclass to hold configuration."""
@@ -39,7 +43,7 @@ class Configuration:
     auth2_audience: str
     bodc_archive_url: str
     file_formats: List[str]
-    archive_checker_frequency: int
+    archive_checker_frequency: int  #: This should be passed in as minutes
     save_file_location: Path
     log_file_location: Path
 
@@ -73,3 +77,17 @@ class Configuration:
                 raise InvalidPathError(f"{field} is an invalid path.") from None
 
         return cls(**data_dict)
+
+    @property
+    def deployment_location(self) -> Path:
+        """A getter to return the location of active_deployments directory."""
+        return Path(self.save_file_location).joinpath("active_deployments")
+
+    def create_deployment_location(self) -> Path:
+        """A setter to create the location of active_deployments directory."""
+        try:
+            active_deployments_location = Path(self.save_file_location).joinpath("active_deployments")
+            active_deployments_location.mkdir(parents=True, exist_ok=True)
+            return active_deployments_location
+        except FileExistsError as file_err:
+            raise InvalidDirectoryError("Error: could not create a active_deployments directory.") from file_err

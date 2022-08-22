@@ -39,7 +39,7 @@ def fixture_pusher_config():
 
 
 @responses.activate
-def test_token_refresher_call(refresh_token, pusher_config):
+def test_get_access_token_from_refresh_token(refresh_token, pusher_config):
     """Check the responses for refresh token flow is working"""
     mockresp = responses.Response(
         method="POST",
@@ -49,21 +49,14 @@ def test_token_refresher_call(refresh_token, pusher_config):
     )
     responses.add(mockresp)
 
-    resp = token_refresher.token_refresher_call(refresh_token, pusher_config)
+    resp = token_refresher.get_access_token_from_refresh_token(refresh_token, pusher_config)
 
-    assert resp == {
-        "access_token": "New_access_token",
-        "refresh_token": "Test_refresh_token",
-        "id_token": "New_id_token",
-        "token_type": "Bearer",
-        "expires_in": 86400,
-    }
-
+    assert resp == "New_access_token"
     assert len(responses.calls) == 1
 
 
 @responses.activate
-def test_token_refresher_call_error(refresh_token, pusher_config):
+def test_get_access_token_from_refresh_token_error(refresh_token, pusher_config):
     """Check the responses for refresher token when error"""
     mockresp = responses.Response(
         method="POST",
@@ -74,7 +67,7 @@ def test_token_refresher_call_error(refresh_token, pusher_config):
     responses.add(mockresp)
 
     with pytest.raises(token_refresher.AccessCodeError) as err:
-        token_refresher.token_refresher_call(refresh_token, pusher_config)
+        token_refresher.get_access_token_from_refresh_token(refresh_token, pusher_config)
 
     assert err.value.args[0] == "Refresh token not generated. \nError: Some test error"
 
@@ -89,7 +82,7 @@ def test_token_refresher_call_error(refresh_token, pusher_config):
     ],
 )
 @responses.activate
-def test_token_refresher_call_exception(resp_body, expected, refresh_token, pusher_config):
+def test_get_access_token_from_refresh_token_exception(resp_body, expected, refresh_token, pusher_config):
     """Check the exceptions when a refresher token is requested."""
     mockresp = responses.Response(
         method="POST",
@@ -99,6 +92,6 @@ def test_token_refresher_call_exception(resp_body, expected, refresh_token, push
     )
     responses.add(mockresp)
     with pytest.raises(token_refresher.AccessCodeError) as err:
-        token_refresher.token_refresher_call(refresh_token, pusher_config)
+        token_refresher.get_access_token_from_refresh_token(refresh_token, pusher_config)
 
     assert err.value.args[0] == expected
