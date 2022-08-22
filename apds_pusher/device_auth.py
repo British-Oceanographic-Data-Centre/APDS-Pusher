@@ -14,7 +14,7 @@ class DeviceCodeError(Exception):
     """Exception raised when errors in the refreshed access token."""
 
 
-def get_device_code(client_id: str, auth_domain: str) -> Dict:
+def get_device_code(client_id: str, auth2_audience: str, auth_domain: str) -> Dict:
     """Method to authorize the device.
 
     The verification url and the user code is returned for user to authorise his/her device. User has to
@@ -23,13 +23,14 @@ def get_device_code(client_id: str, auth_domain: str) -> Dict:
     Args:
        auth_domain (str) : The url of the auth domain
        client_id (str) : client id of the APDS pusher application
+       auth2_audience (str) : setting in 0auth2 to link request to target application
 
     Returns :
         the response payload containing the user code and tinyurl else will raise an exception
     """
     payload = {
         "scope": "openid email offline_access",
-        "audience": "prd.apds.bodc.me/pusher",
+        "audience": auth2_audience,
         "client_id": client_id,
     }
     headers = {"content-type": "application/json"}
@@ -38,7 +39,7 @@ def get_device_code(client_id: str, auth_domain: str) -> Dict:
         res.raise_for_status()
 
     except requests.exceptions.HTTPError as errhttp:
-        raise DeviceCodeError("HTTP error while generating Device Code") from errhttp
+        raise DeviceCodeError(f"HTTP error while generating Device Code: {errhttp.response.text}") from errhttp
     except requests.exceptions.ConnectionError as errconn:
         raise DeviceCodeError("Connection error while generating Device Code") from errconn
     except requests.exceptions.Timeout as errtimeout:
@@ -65,9 +66,10 @@ def authenticate(config: Configuration) -> Tuple[str, str, int, str, int]:
     # reads the auth0 details
     auth_domain = config.auth0_tenant
     client_id = config.client_id
+    auth2_audience = config.auth2_audience
 
     # retrieves the URL and challenge code for device flow
-    device_data = get_device_code(client_id, auth_domain)
+    device_data = get_device_code(client_id, auth2_audience, auth_domain)
 
     user_code = device_data["user_code"]
     url = device_data["verification_uri"]
@@ -75,7 +77,7 @@ def authenticate(config: Configuration) -> Tuple[str, str, int, str, int]:
     device_code = device_data["device_code"]
     interval = device_data["interval"]
 
-    return (url, user_code, expires_in, device_code, interval)
+    return url, user_code, expires_in, device_code, interval
 
 
 def is_correct_response(response: requests.Response) -> bool:
