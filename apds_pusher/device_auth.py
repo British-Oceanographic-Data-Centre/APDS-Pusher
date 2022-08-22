@@ -39,7 +39,7 @@ def get_device_code(client_id: str, auth2_audience: str, auth_domain: str) -> Di
         res.raise_for_status()
 
     except requests.exceptions.HTTPError as errhttp:
-        raise DeviceCodeError(f"HTTP error while generating Device Code") from errhttp
+        raise DeviceCodeError("HTTP error while generating Device Code") from errhttp
     except requests.exceptions.ConnectionError as errconn:
         raise DeviceCodeError("Connection error while generating Device Code") from errconn
     except requests.exceptions.Timeout as errtimeout:
