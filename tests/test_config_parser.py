@@ -13,7 +13,7 @@ def config_dict_fixture():
     return dict(
         client_id="an_id",
         auth0_tenant="a_tenant",
-        auth2_audience= "an audience",
+        auth2_audience="an audience",
         client_secret="a secret",
         bodc_archive_url="url",
         file_formats=[".dat"],

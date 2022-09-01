@@ -34,7 +34,7 @@ def call_holdings_endpoint(bodc_archive_url: str, deployment_id: str) -> dict:
     """
     url = urljoin(bodc_archive_url, f"holdings/{deployment_id}")
     try:
-        response = rq.get(url)
+        response = rq.get(url, timeout=600)
         response.raise_for_status()
         return response.json()
     except rq.exceptions.RequestException:
@@ -111,7 +111,7 @@ def send_to_archive_api(file_location: Path, deployment_id: str, access_token: s
             )
         ]
 
-    response = rq.request("POST", url, headers=headers, files=files)  # type: ignore
+    response = rq.request("POST", url, headers=headers, files=files, timeout=600)  # type: ignore
 
     if "500 Internal Server Error" in response.text:
         raise FileUploadError

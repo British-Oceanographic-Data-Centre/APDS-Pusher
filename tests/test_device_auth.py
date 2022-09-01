@@ -65,7 +65,7 @@ def fixture_pusher_config():
     return config_parser.Configuration(
         client_id="an_id",
         client_secret="A secret",
-        auth2_audience= "an audience",
+        auth2_audience="an audience",
         auth0_tenant="a_tenant.com",
         bodc_archive_url="url",
         file_formats=[".dat"],
@@ -86,7 +86,9 @@ def test_get_device_code(pusher_config):
     )
     responses.add(mockresp)
 
-    resp = device_auth.get_device_code(pusher_config.client_id, pusher_config.auth2_audience, pusher_config.auth0_tenant)
+    resp = device_auth.get_device_code(
+        pusher_config.client_id, pusher_config.auth2_audience, pusher_config.auth0_tenant
+    )
 
     assert resp == {
         "device_code": "Ag_EE...ko1p",

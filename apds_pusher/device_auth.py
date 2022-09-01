@@ -35,7 +35,7 @@ def get_device_code(client_id: str, auth2_audience: str, auth_domain: str) -> Di
     }
     headers = {"content-type": "application/json"}
     try:
-        res = requests.post("https://" + auth_domain + "/oauth/device/code", headers=headers, json=payload)
+        res = requests.post("https://" + auth_domain + "/oauth/device/code", headers=headers, json=payload, timeout=600)
         res.raise_for_status()
 
     except requests.exceptions.HTTPError as errhttp:
@@ -122,7 +122,7 @@ def receive_access_token_from_device_code(device_code_response: Dict, config: Co
     }
     try:
         access_token = polling2.poll(
-            lambda: requests.post(url, headers=headers, json=payload),
+            lambda: requests.post(url, headers=headers, json=payload, timeout=600),
             check_success=is_correct_response,
             step=device_code_response["interval"],
             timeout=device_code_response["expires_in"],
