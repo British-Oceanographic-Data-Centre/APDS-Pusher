@@ -64,16 +64,12 @@ Installing APDS-Pusher
 ~~~~~~~~~~~~~~~~~~~~~~
 
 Now that the virtual environment is activated, you can install
-``APDS-Pusher`` and specify the version you would like to install (in
-the example below the version is ``v1.2.3``):
+``APDS-Pusher`` :
 
 .. code:: shell
 
-   (venv) $ python -m pip install git+https://github.com/British-Oceanographic-Data-Centre/APDS-Pusher@v1.2.3
+   (venv) $ python -m pip install git+https://github.com/British-Oceanographic-Data-Centre/APDS-Pusher
 
-Available versions can be found on the
-`Releases <https://github.com/British-Oceanographic-Data-Centre/APDS-Pusher/releases>`__
-page of the ``APDS-Pusher`` GitHub repository.
 
 You can check that it is installed correctly by now running:
 
@@ -117,6 +113,7 @@ saved as a ``.json`` file:
        "auth0_tenant": "bodc.eu.auth0.com",
        "client_id" : "YOUR_CLIENT_ID",
        "client_secret": "YOUR_CLIENT_SECRET",
+       "auth2_audience": 'who-am-i-talking-to'
        "bodc_archive_url" : "test_archive_url",
        "file_formats" : [".sbd", ".tbd", ".cac"],
        "archive_checker_frequency" : 100,
@@ -133,6 +130,7 @@ values they should take, contact BODC for an example file:
    data as, which is used for authentication, as provided by BODC.
 -  ``client_secret``: This is the authentication secret for the
    organisation, as provided by BODC.
+- ``auth2_audience``: This is the name of the application, as provided by BODC.
 -  ``bodc_archive_url``: This is the URL which files will be pushed to.
 -  ``file_formats``: A list of file extensions. When searching for files
    to be sent, only files with these extensions will be sent for upload.
