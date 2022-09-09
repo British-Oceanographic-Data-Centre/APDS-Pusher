@@ -2,6 +2,7 @@
   "auth0_tenant": "a_tenant",
   "client_id": "an_id",
   "client_secret": "a secret",
+  "auth2_audience": "an audience",
   "bodc_archive_url": "a_url",
   "file_formats": [
     "*.json",
