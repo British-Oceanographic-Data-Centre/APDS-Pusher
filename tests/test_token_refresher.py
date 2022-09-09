@@ -1,5 +1,5 @@
+# pylint: disable=duplicate-code
 """Test token refresher. """
-
 
 import pytest
 import requests
@@ -28,6 +28,7 @@ def fixture_pusher_config():
     return config_parser.Configuration(
         client_id="a_clientid",
         client_secret="A secret",
+        auth2_audience="an audience",
         auth0_tenant="a_tenant.com",
         bodc_archive_url="url",
         file_formats=[".dat"],

@@ -1,3 +1,4 @@
+# pylint: disable=duplicate-code
 """Tests for the system logger."""
 from pathlib import Path
 
@@ -19,6 +20,7 @@ def config_dict_fixture(tmp_path):
     return Configuration(
         client_id="an_id",
         auth0_tenant="a_tenant",
+        auth2_audience="an audience",
         client_secret="a secret",
         bodc_archive_url="url",
         file_formats=[".cac", ".sbd", ".tbd"],

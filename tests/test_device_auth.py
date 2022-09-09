@@ -65,6 +65,7 @@ def fixture_pusher_config():
     return config_parser.Configuration(
         client_id="an_id",
         client_secret="A secret",
+        auth2_audience="an audience",
         auth0_tenant="a_tenant.com",
         bodc_archive_url="url",
         file_formats=[".dat"],
@@ -85,7 +86,9 @@ def test_get_device_code(pusher_config):
     )
     responses.add(mockresp)
 
-    resp = device_auth.get_device_code(pusher_config.client_id, pusher_config.auth0_tenant)
+    resp = device_auth.get_device_code(
+        pusher_config.client_id, pusher_config.auth2_audience, pusher_config.auth0_tenant
+    )
 
     assert resp == {
         "device_code": "Ag_EE...ko1p",
@@ -111,7 +114,7 @@ def test_get_device_code_with_error(pusher_config):
     responses.add(mockresp)
 
     with pytest.raises(device_auth.DeviceCodeError) as unknerr:
-        device_auth.get_device_code(pusher_config.client_id, pusher_config.auth0_tenant)
+        device_auth.get_device_code(pusher_config.client_id, pusher_config.auth2_audience, pusher_config.auth0_tenant)
 
     assert unknerr.value.args[0] == "Device code not generated. \nError: Test Error."
 
@@ -137,7 +140,7 @@ def test_get_device_code_with_exception_2(resp_body, expected, pusher_config):
     responses.add(mockresp)
 
     with pytest.raises(device_auth.DeviceCodeError) as err:
-        device_auth.get_device_code(pusher_config.client_id, pusher_config.auth0_tenant)
+        device_auth.get_device_code(pusher_config.client_id, pusher_config.auth2_audience, pusher_config.auth0_tenant)
 
     assert err.value.args[0] == expected
 

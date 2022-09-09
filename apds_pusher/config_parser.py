@@ -40,6 +40,7 @@ class Configuration:
     auth0_tenant: str
     client_id: str
     client_secret: str
+    auth2_audience: str
     bodc_archive_url: str
     file_formats: List[str]
     archive_checker_frequency: int  #: This should be passed in as minutes
