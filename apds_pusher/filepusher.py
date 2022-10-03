@@ -103,7 +103,7 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
         self.system_logger.info(f"There are currently {len(files_currently_in_archive)} files in the archive.")
 
         for file in self.retrieve_file_paths():
-            if file in files_currently_in_archive:
+            if file.name in files_currently_in_archive:
                 self.system_logger.warn(f"{file} already exists in deployment")
                 duplicates += 1
             else:
@@ -146,7 +146,7 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
         duplicates, files_added = 0, 0
         for file in files_to_send_to_archive:  # pylint: disable=too-many-nested-blocks
             self.system_logger.info(f"Starting file transfer of {file} to BODC.")
-            if file in files_currently_in_archive:
+            if file.name in files_currently_in_archive:
                 duplicates += 1
                 self.system_logger.warn(f"{file} already exists in deployment")
             else:
