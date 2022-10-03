@@ -30,6 +30,9 @@ def load_configuration_file(config_path: Path) -> Configuration:
     except ParserException as exc:
         raise click.ClickException(exc.args[0]) from None
 
+    if not isinstance(config.archive_checker_frequency, int):
+        raise click.ClickException("'archive_checker_frequency' in the config file needs to be a integer.") from None
+
     click.echo(message="Configuration accepted")
 
     return config
