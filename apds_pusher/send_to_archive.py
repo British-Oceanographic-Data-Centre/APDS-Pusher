@@ -88,11 +88,10 @@ def send_to_archive_api(file_location: Path, deployment_id: str, access_token: s
     Returns:
         A string to inform the result of the API call.
     """
-    # Construct relative path for API string, then poplulate template string
-    relative_path = f"{file_location.parent.name}/{file_location.name}"
-
     url = urljoin(
-        bodc_archive_url, f"archiveFile/{deployment_id}?relativePath={relative_path}&hostPath=/{file_location.name}/"
+        bodc_archive_url,
+        f"archiveFile/{deployment_id}?"
+        f"relativePath={file_location.name}&hostPath=/{file_location.parent.resolve()}/",
     )
     # Populate the headers with the access token
     headers = {"Authorization": f"Bearer {access_token}"}
