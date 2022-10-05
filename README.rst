@@ -113,7 +113,7 @@ saved as a ``.json`` file:
        "auth0_tenant": "bodc.eu.auth0.com",
        "client_id" : "YOUR_CLIENT_ID",
        "client_secret": "YOUR_CLIENT_SECRET",
-       "auth2_audience": 'who-am-i-talking-to'
+       "auth2_audience": "who-am-i-talking-to",
        "bodc_archive_url" : "test_archive_url",
        "file_formats" : [".sbd", ".tbd", ".cac"],
        "archive_checker_frequency" : 100,
