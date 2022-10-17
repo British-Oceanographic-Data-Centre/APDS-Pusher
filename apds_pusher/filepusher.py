@@ -100,7 +100,7 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
         files_currently_in_archive = self.get_existing_glider_files_for_deployment()
         duplicates, files_added = 0, 0
         self.system_logger.info(f"Starting a dry run for deployment id: {self.deployment_id}")
-        self.system_logger.info(f"There are currently {len(files_currently_in_archive)} files in the archive.")
+        self.system_logger.info(f"There are currently {len(files_currently_in_archive)} files in the BODC archive.")
 
         for file in self.retrieve_file_paths():
             if file.name in files_currently_in_archive:
@@ -111,7 +111,7 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
                 files_added += 1
 
         self.system_logger.info(
-            f"A total of {files_added} files would have been sent to the Archive in non dry-run mode"
+            f"A total of {files_added} files would have been sent to the BODC archive in non dry-run mode"
         )
         self.system_logger.info(f"A total of {duplicates} duplicates were detected")
 
@@ -137,10 +137,10 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
         """Manages the sending of files to the API."""
         files_currently_in_archive = self.get_existing_glider_files_for_deployment()
         files_to_send_to_archive = self.retrieve_file_paths()
-        self.system_logger.info(f"The program will attempt to add {len(files_to_send_to_archive )} to the archive")
+        self.system_logger.info(f"There are {len(files_to_send_to_archive )} files locally")
 
         self.system_logger.info(
-            f"Currently {len(files_currently_in_archive)} files in archive for deploymentID: {self.deployment_id}"
+            f"There are currently {len(files_currently_in_archive)} files in BODC archive for deploymentID: {self.deployment_id}"
         )
 
         duplicates, files_added = 0, 0
