@@ -60,7 +60,7 @@ def return_existing_glider_files(bodc_archive_url: str, deployment_id: str) -> S
     response = call_holdings_endpoint(bodc_archive_url, deployment_id)["files"]
 
     # Extract keys which contain the arrays of filenames
-    keys_required = [file for file in response.keys() if file.endswith("files")]
+    keys_required = [file for file in response.keys() if (file.endswith("files") and "rxf" not in file)]
 
     # Build a master set to hold filenames
     all_filenames: Set[str] = set()
