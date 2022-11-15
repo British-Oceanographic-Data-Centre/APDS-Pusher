@@ -1,7 +1,10 @@
 """Program to orchestrate push of files to the Archive API."""
+import traceback
 from pathlib import Path
 from time import sleep
 from typing import List
+
+from requests.exceptions import ConnectTimeout, RequestException
 
 from apds_pusher.config_parser import Configuration
 from apds_pusher.savefilelogger import FileLogger
@@ -120,10 +123,11 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
         try:
             files_in_current_deployment = return_existing_glider_files(self.config.bodc_archive_url, self.deployment_id)
         except HoldingsAccessError:
-            files_in_current_deployment = set()
-            self.system_logger.warn(
-                "Unable to get existing files. Checks can't be done to ensure file is not already in archive."
+            self.system_logger.error(
+                "Unable to get existing files. A file send will not be attempted to avoid sending duplicated files."
             )
+            self.system_logger.error(f"Full Traceback for holdings endpoint error: {traceback.format_exc()}")
+            raise HoldingsAccessError from None
         else:
             self.system_logger.info(f"Filenames retrieved successfully for deployment: {self.deployment_id}")
 
@@ -133,9 +137,12 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
         """Private method to refresh access token."""
         self.access_token = get_access_token_from_refresh_token(self.refresh_token, self.config)
 
-    def send_files_to_api(self) -> None:
+    def send_files_to_api(self) -> None:  # pylint: disable=R0912
         """Manages the sending of files to the API."""
-        files_currently_in_archive = self.get_existing_glider_files_for_deployment()
+        try:
+            files_currently_in_archive = self.get_existing_glider_files_for_deployment()
+        except HoldingsAccessError:
+            return
         files_to_send_to_archive = self.retrieve_file_paths()
         self.system_logger.info(f"The program will attempt to add {len(files_to_send_to_archive )} to the archive")
 
@@ -166,6 +173,26 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
                         self._token_refresh()
                     except FileUploadError:
                         self.system_logger.error(f"File transfer Failed for: {file}")
+                    except ConnectTimeout as exc:
+                        self.system_logger.error(f"Connection timed out during transfer of {file}")
+                        self.system_logger.error(f"This attempt failed with the following full URL: {exc.request.url}")
+                        self.system_logger.error(
+                            f"This attempt failed with the following output: {traceback.format_exc()}"
+                        )
+                    except ConnectionError:
+                        self.system_logger.error(
+                            f"Failed to connect to {self.config.bodc_archive_url} during transfer of {file}"
+                        )
+                        self.system_logger.error(
+                            f"This attempt failed with the following output: {traceback.format_exc()}"
+                        )
+                    except RequestException:
+                        self.system_logger.error(
+                            f"Failed to connect to {self.config.bodc_archive_url} during transfer of {file}"
+                        )
+                        self.system_logger.error(
+                            f"This attempt failed with the following output: {traceback.format_exc()}"
+                        )
                     finally:
                         attempts += 1
 
