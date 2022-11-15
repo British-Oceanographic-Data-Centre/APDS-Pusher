@@ -38,7 +38,7 @@ def call_holdings_endpoint(bodc_archive_url: str, deployment_id: str) -> dict:
         response.raise_for_status()
         return response.json()
     except rq.exceptions.RequestException:
-        raise HoldingsAccessError from None
+        raise HoldingsAccessError  # pylint: disable=W0707
 
 
 def return_existing_glider_files(bodc_archive_url: str, deployment_id: str) -> Set[str]:
