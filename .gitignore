@@ -36,3 +36,8 @@ config.json
 runtests.py
 testdir/
 
+*.nc
+*.txt
+prod_config.json
+playground/main.py
+playground/main.py
