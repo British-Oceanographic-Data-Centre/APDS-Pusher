@@ -1,4 +1,5 @@
 """Program to orchestrate push of files to the Archive API."""
+import time
 import traceback
 from pathlib import Path
 from time import sleep
@@ -32,6 +33,7 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
         is_dry_run: bool,
         access_token: str,
         refresh_token: str,
+        deployment_file: Path,
     ):
         """Setup for File Pusher."""
         self.deployment_id = deployment_id
@@ -42,6 +44,7 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
         self.is_dry_run = is_dry_run
         self.access_token = access_token
         self.refresh_token = refresh_token
+        self.deployment_file = deployment_file
 
         # Begin the logging
         self.initialise_logging()
@@ -91,10 +94,14 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
         recursive_state = "Active" if self.is_recursive else "Not active"
         self.system_logger.info(f"Recursive folder searching is {recursive_state}")
 
+        with open(Path(self.deployment_file), "r", encoding="utf-8") as deployment_file:
+            deployment_time = float(deployment_file.read())
+
         file_paths: List[Path] = []
         glob_prefix = "**/*" if self.is_recursive else "*"
         for file_format in self.config.file_formats:
-            file_paths.extend(self.deployment_location.glob(f"{glob_prefix}{file_format}"))
+            unfiltered = list(self.deployment_location.glob(f"{glob_prefix}{file_format}"))
+            file_paths.extend(list(filter(lambda file: file.lstat().st_mtime > deployment_time, unfiltered)))
 
         return file_paths
 
@@ -128,14 +135,24 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
             )
             self.system_logger.error(f"Full Traceback for holdings endpoint error: {traceback.format_exc()}")
             raise HoldingsAccessError from None
-        else:
-            self.system_logger.info(f"Filenames retrieved successfully for deployment: {self.deployment_id}")
 
+        self.system_logger.info(f"Filenames retrieved successfully for deployment: {self.deployment_id}")
         return files_in_current_deployment
 
     def _token_refresh(self) -> None:
         """Private method to refresh access token."""
         self.access_token = get_access_token_from_refresh_token(self.refresh_token, self.config)
+
+    def update_timestamp_in_deployment_file(self) -> None:
+        """Update timestamp in the DEP.txt file.
+
+        This method is called after each file send loop, and when called
+        it will write the current timestamp to each file.
+
+        """
+        with open(Path(self.deployment_file), "w", encoding="utf-8") as file:
+            current_time = time.time()
+            file.write(str(current_time))
 
     def send_files_to_api(self) -> None:  # pylint: disable=R0912
         """Manages the sending of files to the API."""
@@ -199,4 +216,6 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
         self.system_logger.info(
             f"There are {files_added + len(files_currently_in_archive)} files in archive after {files_added} new files"
         )
+        self.update_timestamp_in_deployment_file()
+        self.system_logger.info("Time updated for the next push.")
         self.system_logger.info(f"A total of {duplicates} duplicates were detected")
