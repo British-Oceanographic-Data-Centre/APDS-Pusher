@@ -57,7 +57,7 @@ def test_retrieve_glider_file_paths(tmp_path, config):
     instance = FilePusher("123", glider_dir, config, True, True, True, "", "", deployment_file)
 
     # Call function to attempt to retrieve .tbd, .cac and .sbd files only.
-    retrieved_files = instance.retrieve_file_paths()
+    retrieved_files = instance.retrieve_file_paths(1)
 
     # Check the CSV file was not included in the retrieved file paths
     assert Path(glider_dir, "spreadsheet.csv") not in retrieved_files
