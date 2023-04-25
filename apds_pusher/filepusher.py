@@ -67,9 +67,9 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
                 self.system_logger.info(f"Starting cycle number: {file_push_cycles}")
 
                 if self.is_dry_run:
-                    self.dry_run_send()
+                    self.dry_run_send(file_push_cycles)
                 else:
-                    self.send_files_to_api()
+                    self.send_files_to_api(file_push_cycles)
 
                 self.system_logger.info(f"Cycle number {file_push_cycles} complete.")
                 file_push_cycles += 1
@@ -89,7 +89,7 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
         self.file_logger = FileLogger(self.config.save_file_location, self.deployment_location, self.deployment_id)
         self.system_logger.info(f"Save file located at: {self.file_logger.file_path}")
 
-    def retrieve_file_paths(self) -> List[Path]:
+    def retrieve_file_paths(self, cycle_number: int) -> List[Path]:
         """Retrieve a list of absolute paths for desired glider files."""
         recursive_state = "Active" if self.is_recursive else "Not active"
         self.system_logger.info(f"Recursive folder searching is {recursive_state}")
@@ -101,18 +101,22 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
         glob_prefix = "**/*" if self.is_recursive else "*"
         for file_format in self.config.file_formats:
             unfiltered = list(self.deployment_location.glob(f"{glob_prefix}{file_format}"))
-            file_paths.extend(list(filter(lambda file: file.lstat().st_mtime > deployment_time, unfiltered)))
+
+            if cycle_number > 1:
+                file_paths.extend(list(filter(lambda file: file.lstat().st_mtime > deployment_time, unfiltered)))
+            else:
+                file_paths.extend(unfiltered)
 
         return file_paths
 
-    def dry_run_send(self) -> None:
+    def dry_run_send(self, cycle_number: int) -> None:
         """Perform a dry run send of the files."""
         files_currently_in_archive = self.get_existing_glider_files_for_deployment()
         duplicates, files_added = 0, 0
         self.system_logger.info(f"Starting a dry run for deployment id: {self.deployment_id}")
         self.system_logger.info(f"There are currently {len(files_currently_in_archive)} files in the archive.")
 
-        for file in self.retrieve_file_paths():
+        for file in self.retrieve_file_paths(cycle_number):
             if file.name in files_currently_in_archive:
                 self.system_logger.warn(f"{file} already exists in deployment")
                 duplicates += 1
@@ -123,6 +127,8 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
         self.system_logger.info(
             f"A total of {files_added} files would have been sent to the Archive in non dry-run mode"
         )
+        self.update_timestamp_in_deployment_file()
+        self.system_logger.info("Time updated for the next push.")
         self.system_logger.info(f"A total of {duplicates} duplicates were detected")
 
     def get_existing_glider_files_for_deployment(self) -> set:
@@ -154,13 +160,13 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
             current_time = time.time()
             file.write(str(current_time))
 
-    def send_files_to_api(self) -> None:  # pylint: disable=R0912
+    def send_files_to_api(self, cycle_number: int) -> None:  # pylint: disable=R0912, R0915
         """Manages the sending of files to the API."""
         try:
             files_currently_in_archive = self.get_existing_glider_files_for_deployment()
         except HoldingsAccessError:
             return
-        files_to_send_to_archive = self.retrieve_file_paths()
+        files_to_send_to_archive = self.retrieve_file_paths(cycle_number)
         self.system_logger.info(f"The program will attempt to add {len(files_to_send_to_archive )} to the archive")
 
         self.system_logger.info(
