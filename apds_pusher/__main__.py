@@ -2,6 +2,7 @@
 import json
 import sys
 import time
+import traceback
 from pathlib import Path
 from typing import Tuple
 
@@ -196,18 +197,22 @@ def start(  # pylint: disable=too-many-arguments, too-many-locals
         click.echo(f"Archival for deployment id {deployment_id} started")
 
     # call the file archival passing the access_token
-    pusher = filepusher.FilePusher(
-        deployment_id,
-        data_directory,
-        config,
-        is_production,
-        is_recursive,
-        is_dry_run,
-        access_token,
-        refresh_token,
-        deployment_file,
-    )
-    pusher.run()
+    try:
+        pusher = filepusher.FilePusher(
+            deployment_id,
+            data_directory,
+            config,
+            is_production,
+            is_recursive,
+            is_dry_run,
+            access_token,
+            refresh_token,
+            deployment_file,
+        )
+        pusher.run()
+    except Exception:  # pylint: disable=broad-exception-caught
+        with open("FilePusherError.txt", mode="w", encoding="utf-8") as error_file:
+            error_file.write(traceback.format_exc())
 
 
 # to stop a deployment!

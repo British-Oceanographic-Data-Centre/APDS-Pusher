@@ -62,20 +62,31 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
         file_push_cycles = 1
 
         while True:
-            # start archival if there was no request to stop the archival
-            if self.check_deployment_not_stopped(self.deployment_id):
-                self.system_logger.info(f"Starting cycle number: {file_push_cycles}")
+            try:
+                # start archival if there was no request to stop the archival
+                if self.check_deployment_not_stopped(self.deployment_id):
+                    self.system_logger.info(f"Starting cycle number: {file_push_cycles}")
 
-                if self.is_dry_run:
-                    self.dry_run_send(file_push_cycles)
+                    if self.is_dry_run:
+                        self.dry_run_send(file_push_cycles)
+                    else:
+                        self.send_files_to_api(file_push_cycles)
+
+                    self.system_logger.info(f"Cycle number {file_push_cycles} complete.")
+                    file_push_cycles += 1
+                    sleep(self.config.archive_checker_frequency * 60)
                 else:
-                    self.send_files_to_api(file_push_cycles)
+                    self.system_logger.info("'check_deployment_not_stopped' returned False, program exiting.")
+                    raise SystemExit
+            except Exception:  # pylint: disable=broad-exception-caught
+                # Log the full traceback to the system logger.
+                self.system_logger.error(f"Exception caught during file send loop: {traceback.format_exc()}")
 
-                self.system_logger.info(f"Cycle number {file_push_cycles} complete.")
+                # For clarity, write the full traceback to its own file.
+                with open(f"Error_cycle_{file_push_cycles}.txt", mode="w", encoding="utf-8") as error_file:
+                    error_file.write(traceback.format_exc())
+
                 file_push_cycles += 1
-                sleep(self.config.archive_checker_frequency * 60)
-            else:
-                raise SystemExit
 
     def check_deployment_not_stopped(self, deployment_id: str) -> bool:
         """Check if there was a request to stop the archival for the deployment id."""
@@ -172,7 +183,6 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
         self.system_logger.info(
             f"Currently {len(files_currently_in_archive)} files in archive for deploymentID: {self.deployment_id}"
         )
-
         duplicates, files_added = 0, 0
         for file in files_to_send_to_archive:  # pylint: disable=too-many-nested-blocks
             self.system_logger.info(f"Starting file transfer of {file} to BODC.")
