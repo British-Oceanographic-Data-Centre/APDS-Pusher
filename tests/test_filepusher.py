@@ -35,7 +35,7 @@ def test_instance_creation(tmp_path, config):
     glider_dir = tmp_path / "gliders/"
     glider_dir.mkdir()
 
-    instance = FilePusher("123", glider_dir, config, True, True, True, "", "")
+    instance = FilePusher("123", glider_dir, config, True, True, True, "", "", "file.txt")
     assert isinstance(instance, FilePusher)
 
 
@@ -44,6 +44,9 @@ def test_retrieve_glider_file_paths(tmp_path, config):
     glider_dir = tmp_path / "gliders/"
     glider_dir.mkdir()
 
+    deployment_file = tmp_path / "file.txt"
+    deployment_file.write_text("1234.56")
+
     # Iterate through and create files in temporary directory
     test_filenames = ["file1.cac", "file2.sbd", "file123.tbd", "abcde.cac"]
     for filename in test_filenames + ["spreadsheet.csv"]:
@@ -51,10 +54,10 @@ def test_retrieve_glider_file_paths(tmp_path, config):
         glider_directory.touch()
 
     # Set up a test instance
-    instance = FilePusher("123", glider_dir, config, True, True, True, "", "")
+    instance = FilePusher("123", glider_dir, config, True, True, True, "", "", deployment_file)
 
     # Call function to attempt to retrieve .tbd, .cac and .sbd files only.
-    retrieved_files = instance.retrieve_file_paths()
+    retrieved_files = instance.retrieve_file_paths(1)
 
     # Check the CSV file was not included in the retrieved file paths
     assert Path(glider_dir, "spreadsheet.csv") not in retrieved_files

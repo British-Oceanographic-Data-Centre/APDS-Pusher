@@ -1,4 +1,5 @@
 """Program to orchestrate push of files to the Archive API."""
+import time
 import traceback
 from pathlib import Path
 from time import sleep
@@ -32,6 +33,7 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
         is_dry_run: bool,
         access_token: str,
         refresh_token: str,
+        deployment_file: Path,
     ):
         """Setup for File Pusher."""
         self.deployment_id = deployment_id
@@ -42,6 +44,7 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
         self.is_dry_run = is_dry_run
         self.access_token = access_token
         self.refresh_token = refresh_token
+        self.deployment_file = deployment_file
 
         # Begin the logging
         self.initialise_logging()
@@ -59,20 +62,31 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
         file_push_cycles = 1
 
         while True:
-            # start archival if there was no request to stop the archival
-            if self.check_deployment_not_stopped(self.deployment_id):
-                self.system_logger.info(f"Starting cycle number: {file_push_cycles}")
+            try:
+                # start archival if there was no request to stop the archival
+                if self.check_deployment_not_stopped(self.deployment_id):
+                    self.system_logger.info(f"Starting cycle number: {file_push_cycles}")
 
-                if self.is_dry_run:
-                    self.dry_run_send()
+                    if self.is_dry_run:
+                        self.dry_run_send(file_push_cycles)
+                    else:
+                        self.send_files_to_api(file_push_cycles)
+
+                    self.system_logger.info(f"Cycle number {file_push_cycles} complete.")
+                    file_push_cycles += 1
+                    sleep(self.config.archive_checker_frequency * 60)
                 else:
-                    self.send_files_to_api()
+                    self.system_logger.info("'check_deployment_not_stopped' returned False, program exiting.")
+                    raise SystemExit
+            except Exception:  # pylint: disable=broad-exception-caught
+                # Log the full traceback to the system logger.
+                self.system_logger.error(f"Exception caught during file send loop: {traceback.format_exc()}")
 
-                self.system_logger.info(f"Cycle number {file_push_cycles} complete.")
+                # For clarity, write the full traceback to its own file.
+                with open(f"Error_cycle_{file_push_cycles}.txt", mode="w", encoding="utf-8") as error_file:
+                    error_file.write(traceback.format_exc())
+
                 file_push_cycles += 1
-                sleep(self.config.archive_checker_frequency * 60)
-            else:
-                raise SystemExit
 
     def check_deployment_not_stopped(self, deployment_id: str) -> bool:
         """Check if there was a request to stop the archival for the deployment id."""
@@ -86,26 +100,34 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
         self.file_logger = FileLogger(self.config.save_file_location, self.deployment_location, self.deployment_id)
         self.system_logger.info(f"Save file located at: {self.file_logger.file_path}")
 
-    def retrieve_file_paths(self) -> List[Path]:
+    def retrieve_file_paths(self, cycle_number: int) -> List[Path]:
         """Retrieve a list of absolute paths for desired glider files."""
         recursive_state = "Active" if self.is_recursive else "Not active"
         self.system_logger.info(f"Recursive folder searching is {recursive_state}")
 
+        with open(Path(self.deployment_file), "r", encoding="utf-8") as deployment_file:
+            deployment_time = float(deployment_file.read())
+
         file_paths: List[Path] = []
         glob_prefix = "**/*" if self.is_recursive else "*"
         for file_format in self.config.file_formats:
-            file_paths.extend(self.deployment_location.glob(f"{glob_prefix}{file_format}"))
+            unfiltered = list(self.deployment_location.glob(f"{glob_prefix}{file_format}"))
+
+            if cycle_number > 1:
+                file_paths.extend(list(filter(lambda file: file.lstat().st_mtime > deployment_time, unfiltered)))
+            else:
+                file_paths.extend(unfiltered)
 
         return file_paths
 
-    def dry_run_send(self) -> None:
+    def dry_run_send(self, cycle_number: int) -> None:
         """Perform a dry run send of the files."""
         files_currently_in_archive = self.get_existing_glider_files_for_deployment()
         duplicates, files_added = 0, 0
         self.system_logger.info(f"Starting a dry run for deployment id: {self.deployment_id}")
         self.system_logger.info(f"There are currently {len(files_currently_in_archive)} files in the BODC archive.")
 
-        for file in self.retrieve_file_paths():
+        for file in self.retrieve_file_paths(cycle_number):
             if file.name in files_currently_in_archive:
                 self.system_logger.warn(f"{file} already exists in deployment")
                 duplicates += 1
@@ -116,6 +138,8 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
         self.system_logger.info(
             f"A total of {files_added} files would have been sent to the BODC archive in non dry-run mode"
         )
+        self.update_timestamp_in_deployment_file()
+        self.system_logger.info("Time updated for the next push.")
         self.system_logger.info(f"A total of {duplicates} duplicates were detected")
 
     def get_existing_glider_files_for_deployment(self) -> set:
@@ -128,28 +152,37 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
             )
             self.system_logger.error(f"Full Traceback for holdings endpoint error: {traceback.format_exc()}")
             raise HoldingsAccessError from None
-        else:
-            self.system_logger.info(f"Filenames retrieved successfully for deployment: {self.deployment_id}")
 
+        self.system_logger.info(f"Filenames retrieved successfully for deployment: {self.deployment_id}")
         return files_in_current_deployment
 
     def _token_refresh(self) -> None:
         """Private method to refresh access token."""
         self.access_token = get_access_token_from_refresh_token(self.refresh_token, self.config)
 
-    def send_files_to_api(self) -> None:  # pylint: disable=R0912
+    def update_timestamp_in_deployment_file(self) -> None:
+        """Update timestamp in the DEP.txt file.
+
+        This method is called after each file send loop, and when called
+        it will write the current timestamp to each file.
+
+        """
+        with open(Path(self.deployment_file), "w", encoding="utf-8") as file:
+            current_time = time.time()
+            file.write(str(current_time))
+
+    def send_files_to_api(self, cycle_number: int) -> None:  # pylint: disable=R0912, R0915
         """Manages the sending of files to the API."""
         try:
             files_currently_in_archive = self.get_existing_glider_files_for_deployment()
         except HoldingsAccessError:
             return
-        files_to_send_to_archive = self.retrieve_file_paths()
+        files_to_send_to_archive = self.retrieve_file_paths(cycle_number)
         self.system_logger.info(f"There are {len(files_to_send_to_archive )} files locally")
 
         self.system_logger.info(
             f"There are currently {len(files_currently_in_archive)} files in BODC archive for deploymentID: {self.deployment_id}"
         )
-
         duplicates, files_added = 0, 0
         for file in files_to_send_to_archive:  # pylint: disable=too-many-nested-blocks
             self.system_logger.info(f"Starting file transfer of {file} to BODC.")
@@ -199,4 +232,6 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
         self.system_logger.info(
             f"There are {files_added + len(files_currently_in_archive)} files in archive after {files_added} new files"
         )
+        self.update_timestamp_in_deployment_file()
+        self.system_logger.info("Time updated for the next push.")
         self.system_logger.info(f"A total of {duplicates} duplicates were detected")

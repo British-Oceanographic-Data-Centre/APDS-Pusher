@@ -10,6 +10,7 @@ class FileLogger:
     def __init__(self, save_file_location: Path, deployment_location: Path, deployment_id: str) -> None:
         """Perform setup for FileLogger."""
         self.set_filelog_filename(save_file_location, deployment_location, deployment_id)
+        self.write_initial_line_to_file()
 
     def set_filelog_filename(self, save_file_location: Path, deployment_location: Path, deployment_id: str) -> None:
         """Determine and set the save location of the savefile.
@@ -34,6 +35,11 @@ class FileLogger:
 
         # Set the attribute to file path, to allow for file writing later on
         self.file_path = log_file_name
+
+    def write_initial_line_to_file(self) -> None:
+        """Write a summary line to the top of the save file."""
+        with open(self.file_path, "w", encoding=sys.getdefaultencoding()) as file:
+            file.write("This file will contain a record of all files sent to the BODC archive.\n")
 
     def write_to_log_file(self, filename: str) -> None:
         """Write filename and current date/time to file.

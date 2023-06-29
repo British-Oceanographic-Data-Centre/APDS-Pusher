@@ -10,17 +10,17 @@ from apds_pusher import config_parser
 @pytest.fixture(name="config_dict")
 def config_dict_fixture():
     """A fixture containing a valid configuration dictionary."""
-    return dict(
-        client_id="an_id",
-        auth0_tenant="a_tenant",
-        auth2_audience="an audience",
-        client_secret="a secret",
-        bodc_archive_url="url",
-        file_formats=[".dat"],
-        archive_checker_frequency=1000,
-        save_file_location="a_path",
-        log_file_location="a_path",
-    )
+    return {
+        "client_id": "an_id",
+        "auth0_tenant": "a_tenant",
+        "auth2_audience": "an audience",
+        "client_secret": "a secret",
+        "bodc_archive_url": "url",
+        "file_formats": [".dat"],
+        "archive_checker_frequency": 1000,
+        "save_file_location": "a_path",
+        "log_file_location": "a_path",
+    }
 
 
 def test_dataclass_creation(config_dict):

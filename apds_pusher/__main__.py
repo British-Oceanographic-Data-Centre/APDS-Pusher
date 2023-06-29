@@ -1,7 +1,10 @@
 """APDS command line tool to perform simple verification of inputs."""
 import json
 import sys
+import time
+import traceback
 from pathlib import Path
+from typing import Tuple
 
 import click
 
@@ -83,7 +86,7 @@ def check_delete_active_deployments(deployment_id: str, config: Configuration) -
         raise DeploymentNotFoundError("No deployments being archived.")
 
 
-def check_add_active_deployments(deployment_id: str, config: Configuration) -> bool:
+def check_add_active_deployments(deployment_id: str, config: Configuration) -> Tuple[bool, Path]:
     """Checks and adds if archival for a deployment is going on.
 
     Args:
@@ -94,11 +97,18 @@ def check_add_active_deployments(deployment_id: str, config: Configuration) -> b
     """
     active_deployments_location = config.create_deployment_location()
     deployment_id_file = active_deployments_location / f"{deployment_id}.txt"
-    try:
-        Path(deployment_id_file).touch(exist_ok=False)
-        return True
-    except FileExistsError as file_err:
-        raise DeploymentError(f"Cannot re-start. Archival is going on for deployment_id {deployment_id}") from file_err
+
+    # Causes the program to Error because the pusher app has already been started, therefore archival in progress.
+    if Path(deployment_id_file).is_file():
+        raise DeploymentError(f"Cannot re-start. Archival is going on for deployment_id {deployment_id}")
+
+    Path(deployment_id_file).touch(exist_ok=False)
+
+    with open(Path(deployment_id_file), "a", encoding="utf-8") as file:
+        current_time = time.time()
+        file.write(str(current_time))
+
+    return True, deployment_id_file
 
 
 @click.group()
@@ -147,7 +157,7 @@ def pusher_group() -> None:
     help="Use this flag to switch between recursive and non-recursive searching of files.",
 )
 @click.command()
-def start(  # pylint: disable=too-many-arguments
+def start(  # pylint: disable=too-many-arguments, too-many-locals
     deployment_id: str,
     data_directory: Path,
     config_file: Path,
@@ -182,14 +192,27 @@ def start(  # pylint: disable=too-many-arguments
     refresh_token = tokens["refresh_token"]
 
     # add to list of active deployments
-    if check_add_active_deployments(deployment_id, config):
+    result, deployment_file = check_add_active_deployments(deployment_id, config)
+    if result:
         click.echo(f"Archival for deployment id {deployment_id} started")
 
     # call the file archival passing the access_token
-    pusher = filepusher.FilePusher(
-        deployment_id, data_directory, config, is_production, is_recursive, is_dry_run, access_token, refresh_token
-    )
-    pusher.run()
+    try:
+        pusher = filepusher.FilePusher(
+            deployment_id,
+            data_directory,
+            config,
+            is_production,
+            is_recursive,
+            is_dry_run,
+            access_token,
+            refresh_token,
+            deployment_file,
+        )
+        pusher.run()
+    except Exception:  # pylint: disable=broad-exception-caught
+        with open("FilePusherError.txt", mode="w", encoding="utf-8") as error_file:
+            error_file.write(traceback.format_exc())
 
 
 # to stop a deployment!
