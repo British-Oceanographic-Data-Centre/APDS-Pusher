@@ -1,5 +1,6 @@
 # pylint: disable=duplicate-code
 """Tests for the system logger."""
+import logging
 from pathlib import Path
 
 import pytest
@@ -34,8 +35,8 @@ def test_instance_creation(tmp_path, config):
     """Test an instance can be created from valid inputs."""
     glider_dir = tmp_path / "gliders/"
     glider_dir.mkdir()
-
-    instance = FilePusher("123", glider_dir, config, True, True, True, "", "", "file.txt")
+    log = logging.getLogger("test")
+    instance = FilePusher("123", glider_dir, config, True, True, True, "", "", "file.txt", log)
     assert isinstance(instance, FilePusher)
 
 
@@ -53,8 +54,9 @@ def test_retrieve_glider_file_paths(tmp_path, config):
         glider_directory = tmp_path / "gliders/" / filename
         glider_directory.touch()
 
+    log = logging.getLogger("test")
     # Set up a test instance
-    instance = FilePusher("123", glider_dir, config, True, True, True, "", "", deployment_file)
+    instance = FilePusher("123", glider_dir, config, True, True, True, "", "", deployment_file, log)
 
     # Call function to attempt to retrieve .tbd, .cac and .sbd files only.
     retrieved_files = instance.retrieve_file_paths(1)

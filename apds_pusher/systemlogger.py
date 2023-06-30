@@ -3,15 +3,17 @@ import logging
 from pathlib import Path
 
 
-class SystemLogger:
+class SystemLogger(logging.getLoggerClass()):  # type: ignore
     """A class used to log messages to console and file."""
 
-    def __init__(self, deployment_id: str, log_file_location: Path, deployment_location: Path) -> None:
+    def __init__(
+        self, deployment_id: str, log_file_location: Path, deployment_location: Path, trace: bool = False
+    ) -> None:
         """Set up the SystemLogger."""
-        self.logger = logging.Logger("APDS")
+        super().__init__("APDS")
         self.set_systemlog_filename(deployment_id, log_file_location, deployment_location)
-        self.configure_console_logger()
-        self.configure_file_logger()
+        self.configure_console_logger(trace=trace)
+        self.configure_file_logger(trace=trace)
 
     def set_systemlog_filename(self, deployment_id: str, log_file_location: Path, deployment_location: Path) -> None:
         """Create the logfile name.
@@ -34,43 +36,35 @@ class SystemLogger:
         log_file_name = valid / (deployment_id + ".log")
 
         # Log the filepath to the console as a reference
-        self.logger.info("Log file located at: %s", log_file_name)
+        self.info("Log file located at: %s", log_file_name)
 
         # Then set the log_file_name attribute to the newly created path
         self.log_file_name = log_file_name
 
-    def configure_file_logger(self) -> None:
+    def configure_file_logger(self, trace: bool = False) -> None:
         """Set up logging to file."""
         file_out = logging.FileHandler(self.log_file_name)
-        file_out.setLevel(logging.DEBUG)
-        file_format = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+        if trace:
+            file_out.setLevel(logging.DEBUG)
+        else:
+            file_out.setLevel(logging.INFO)
+        file_format = logging.Formatter("%(asctime)s - %(levelname)s - %(name)s:%(funcName)s:%(lineno)d :- %(message)s")
         file_out.setFormatter(file_format)
-        self.logger.addHandler(file_out)
+        self.addHandler(file_out)
 
-    def configure_console_logger(self) -> None:
+    def configure_console_logger(self, trace: bool = False) -> None:
         """Set up logging to the console."""
         console_out = logging.StreamHandler()
-        console_out.setLevel(logging.DEBUG)
-        console_format = logging.Formatter("%(name)s - %(levelname)s - %(message)s")
+
+        if trace:
+            console_out.setLevel(logging.DEBUG)
+            console_format = logging.Formatter(
+                "%(asctime)s - %(levelname)s - %(name)s:%(module)s:%(lineno)d :- %("
+                "message)s"  # pylint: disable=implicit-str-concat
+            )
+        else:
+            console_out.setLevel(logging.WARNING)
+            console_format = logging.Formatter("%(levelname)s - %(name)s :- %(message)s")
+
         console_out.setFormatter(console_format)
-        self.logger.addHandler(console_out)
-
-    def info(self, msg: str) -> None:
-        """Add an information line to the console and file."""
-        self.logger.info(msg)
-
-    def warn(self, msg: str) -> None:
-        """Add a warning line to the console and file."""
-        self.logger.warning(msg)
-
-    def error(self, msg: str) -> None:
-        """Add an error line to the console and file."""
-        self.logger.error(msg)
-
-    def critical(self, msg: str) -> None:
-        """Add a critcal line to the console and file."""
-        self.logger.critical(msg)
-
-    def debug(self, msg: str) -> None:
-        """Add a debug line to the console and file."""
-        self.logger.debug(msg)
+        self.addHandler(console_out)

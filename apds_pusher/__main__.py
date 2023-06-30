@@ -10,6 +10,7 @@ import click
 
 from apds_pusher import device_auth, filepusher
 from apds_pusher.config_parser import Configuration, ParserException
+from apds_pusher.systemlogger import SystemLogger
 
 
 class DeploymentNotFoundError(Exception):
@@ -111,6 +112,11 @@ def check_add_active_deployments(deployment_id: str, config: Configuration) -> T
     return True, deployment_id_file
 
 
+def initialise_system_logging() -> None:
+    """Sets up the file and system logging."""
+    return
+
+
 @click.group()
 def pusher_group() -> None:
     """A group of all commands."""
@@ -156,6 +162,15 @@ def pusher_group() -> None:
     show_default=True,
     help="Use this flag to switch between recursive and non-recursive searching of files.",
 )
+@click.option(
+    "-t",
+    "--trace",
+    "trace_on",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="Set app off in trace move (very verbos logging) or not (default is not)",
+)
 @click.command()
 def start(  # pylint: disable=too-many-arguments, too-many-locals
     deployment_id: str,
@@ -164,9 +179,20 @@ def start(  # pylint: disable=too-many-arguments, too-many-locals
     is_production: bool,
     is_dry_run: bool,
     is_recursive: bool,
+    trace_on: bool,
 ) -> None:
     """Accept command line arguments and passes them to verification function."""
     config = load_configuration_file(config_file)
+
+    print(f"the trace is: {trace_on}")
+
+    s_logger = SystemLogger(deployment_id, config.log_file_location, config.deployment_location, trace=trace_on)
+    s_logger.debug("The system logger for %s has been setup!", deployment_id)
+
+    # add to list of active deployments
+    result, deployment_file = check_add_active_deployments(deployment_id, config)
+    if result:
+        click.echo(f"Archival for deployment id {deployment_id} started")
 
     # follow the Auth device flow to allow a user to log in via a 3rd party system
     device_code_dtls = device_auth.authenticate(config)
@@ -188,13 +214,9 @@ def start(  # pylint: disable=too-many-arguments, too-many-locals
 
     # Send dictionary and config to complete authentication
     tokens = device_auth.receive_access_token_from_device_code(response, config)
+    s_logger.debug("Auth setup complete")
     access_token = tokens["access_token"]
     refresh_token = tokens["refresh_token"]
-
-    # add to list of active deployments
-    result, deployment_file = check_add_active_deployments(deployment_id, config)
-    if result:
-        click.echo(f"Archival for deployment id {deployment_id} started")
 
     # call the file archival passing the access_token
     try:
@@ -208,11 +230,14 @@ def start(  # pylint: disable=too-many-arguments, too-many-locals
             access_token,
             refresh_token,
             deployment_file,
+            s_logger,
         )
+        s_logger.debug("Starting the pusher for %s using data from %s", deployment_id, data_directory)
         pusher.run()
-    except Exception:  # pylint: disable=broad-exception-caught
-        with open("FilePusherError.txt", mode="w", encoding="utf-8") as error_file:
-            error_file.write(traceback.format_exc())
+    except Exception as e_obj:  # pylint: disable=broad-except
+        s_logger.debug("An error happen on deploy %s using data from %s", deployment_id, data_directory)
+        s_logger.error(str(e_obj))
+        s_logger.debug(traceback.format_exc())
 
 
 # to stop a deployment!
@@ -237,7 +262,13 @@ def stop(
     """Accept command line arguments and stops archival for a deployment id."""
     click.echo(f"Stopping deployment id: {deployment_id}")
     config = load_configuration_file(config_file)
+    s_logger = SystemLogger(deployment_id, config.log_file_location, config.deployment_location)
+    s_logger.info(
+        "The system logger for %s is noting that the deployment is being stopped via the stop command!",
+        deployment_id,
+    )
     if check_delete_active_deployments(deployment_id, config):
+        s_logger.info("%s is now going to be stopped on the pusher.", deployment_id)
         click.echo(f"Archival for deployment id {deployment_id} will be stopped")
 
 
