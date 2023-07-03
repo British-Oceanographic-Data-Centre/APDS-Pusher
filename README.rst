@@ -174,6 +174,20 @@ The options used above are explained below:
    options <#command-line-options>`__ for the default value if this is
    not specified.
 
+Debug mode
+~~~~~~~~~~
+If you are having an issue and are unsure what might be the problem then we suggest turning on debug mode, this is done
+by add the --trace option to the end of the start command.
+
+This option tells the code base to be (very) verbose about what is happening inside the program.
+For this reason we *do not* suggest keeping this option on for any longer than is needed.
+
+.. code:: shell
+
+    bodc-archive-pusher start --deployment-id 123 --data-directory /data/dep-123 --config-file /data/config.json --trace
+
+
+
 Command line options
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -205,3 +219,5 @@ Command line options
                                      searching of files.  [default:
                                      recursive]
      --help                          Show this message and exit.
+
+     --trace                         print alot of logging to the screen and into the file.
