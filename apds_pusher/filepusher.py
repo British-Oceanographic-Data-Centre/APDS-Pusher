@@ -133,7 +133,10 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
         self.system_logger.debug(f"searching for the the following formats: {self.config.file_formats}")
         for file_format in self.config.file_formats:
             unfiltered = list(self.deployment_location.glob(f"{glob_prefix}{file_format}"))
-            self.system_logger.debug(f"full set of files is: {str(unfiltered)}")
+            self.system_logger.debug(f"unfiltered set of files for {file_format} is: {str(unfiltered)}")
+            if not unfiltered:
+                self.system_logger.debug(f"No files found for {file_format}")
+                continue
 
             if cycle_number > 1:
                 self.system_logger.debug(f"{cycle_number} is greater than 1 - this mean we will filter results")
