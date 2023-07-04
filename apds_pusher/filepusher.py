@@ -282,6 +282,13 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
                             f"This attempt failed with the following output: {traceback.format_exc()}"
                         )
                         self.system_logger.debug(f"{str(re_obj)}")
+                    except Exception as e_obj:
+                        self.system_logger.debug(f"This is a catch all then:")
+                        self.system_logger.debug(f"{str(e_obj)}")
+                        self.system_logger.error(
+                            f"This attempt failed with the following output: {traceback.format_exc()}"
+                        )
+                        break
                     finally:
                         attempts += 1
                         self.system_logger.debug(f"Oh dear something went wrong now on {attempts}.")
