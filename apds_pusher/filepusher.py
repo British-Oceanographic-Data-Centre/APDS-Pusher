@@ -210,7 +210,7 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
         with open(Path(self.deployment_file), "w", encoding="utf-8") as file:
             file.write(str(current_time))
 
-    def send_files_to_api(self, cycle_number: int) -> None:  # pylint: disable=R0912, R0915
+    def send_files_to_api(self, cycle_number: int) -> None:  # pylint: disable=R0912, R0915, too-many-locals
         """Manages the sending of files to the API."""
         self.system_logger.debug(f"Starting file push for {self.deployment_id}")
         try:
@@ -282,8 +282,8 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
                             f"This attempt failed with the following output: {traceback.format_exc()}"
                         )
                         self.system_logger.debug(f"{str(re_obj)}")
-                    except Exception as e_obj:
-                        self.system_logger.debug(f"This is a catch all then:")
+                    except Exception as e_obj:  # pylint: disable=broad-except
+                        self.system_logger.debug("This is a catch all then:")
                         self.system_logger.debug(f"{str(e_obj)}")
                         self.system_logger.error(
                             f"This attempt failed with the following output: {traceback.format_exc()}"
