@@ -80,6 +80,17 @@ You can check that it is installed correctly by now running:
 This should display the help for the tool (see also next section) if it
 is installed correctly.
 
+Checking version
+~~~~~~~~~~~~~~~~
+
+To view the tool version you can use the command
+
+.. code:: shell
+
+   (venv) $ bodc-archive-pusher --version
+
+This will show the current installed version, the latest version available, and give the command to use to install the latest version.
+
 --------------
 
 Usage instructions

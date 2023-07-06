@@ -10,6 +10,7 @@ import click
 
 from apds_pusher import device_auth, filepusher
 from apds_pusher.config_parser import Configuration, ParserException
+from apds_pusher.get_version_info import get_current_version, get_github_tag_info, get_latest_install_command
 from apds_pusher.systemlogger import SystemLogger
 
 
@@ -117,9 +118,23 @@ def initialise_system_logging() -> None:
     return
 
 
-@click.group()
-def pusher_group() -> None:
+@click.group(invoke_without_command=True)
+@click.option("--version", "version", flag_value=True, is_flag=True, show_default=True, help="display version info")
+@click.pass_context
+def pusher_group(ctx: click.Context, version: bool) -> None:
     """A group of all commands."""
+    if version:
+        current_version = get_current_version()
+        latest_remote_version = get_github_tag_info()
+        statement = f"Current version:\t{current_version}\nLatest version:\t\t{latest_remote_version}\n"
+        click.echo(statement)
+        if current_version != latest_remote_version:
+            click.echo("To install the latest version, run the following command:")
+            click.echo(f"\n\t{get_latest_install_command(latest_remote_version)}\n")
+        sys.exit(0)
+    if not version and not ctx.invoked_subcommand:
+        click.echo("Error: Missing command.")
+        sys.exit(1)
 
 
 @click.option(
@@ -188,6 +203,7 @@ def start(  # pylint: disable=too-many-arguments, too-many-locals
 
     s_logger = SystemLogger(deployment_id, config.log_file_location, config.deployment_location, trace=trace_on)
     s_logger.debug("The system logger for %s has been setup!", deployment_id)
+    s_logger.info("Current apds-pusher version: %s", get_current_version())
 
     # add to list of active deployments
     result, deployment_file = check_add_active_deployments(deployment_id, config)
