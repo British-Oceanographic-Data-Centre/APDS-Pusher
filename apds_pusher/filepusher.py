@@ -249,14 +249,14 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
                             break
                     except AuthenticationError as ae_obj:
                         self.system_logger.warn("Auth failed, attempting to reset token")
-                        self.system_logger.debug(f"{str(ae_obj)}")
+                        self.system_logger.error(f"{traceback.format_exc()}")
                         self.system_logger.debug("There was an error with the token: lets refresh")
                         self._token_refresh()
                         self.system_logger.debug("Ok we have done the refresh")
 
                     except FileUploadError as fue_obj:
-                        self.system_logger.error(f"File transfer Failed for: {file}")
-                        self.system_logger.debug(f"{str(fue_obj)}")
+                        self.system_logger.error(f"File transfer Failed for {file}")
+                        self.system_logger.error(f"{traceback.format_exc()}")
                     except ConnectTimeout as exc_obj:
                         self.system_logger.error(f"Connection timed out during transfer of {file}")
                         self.system_logger.error(
@@ -273,7 +273,6 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
                         self.system_logger.error(
                             f"This attempt failed with the following output: {traceback.format_exc()}"
                         )
-                        self.system_logger.debug(f"{str(ce_obj)}")
                     except RequestException as re_obj:
                         self.system_logger.error(
                             f"Failed to connect to {self.config.bodc_archive_url} during transfer of {file}"
@@ -281,10 +280,8 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
                         self.system_logger.error(
                             f"This attempt failed with the following output: {traceback.format_exc()}"
                         )
-                        self.system_logger.debug(f"{str(re_obj)}")
                     except Exception as e_obj:  # pylint: disable=broad-except
                         self.system_logger.debug("This is a catch all then:")
-                        self.system_logger.debug(f"{str(e_obj)}")
                         self.system_logger.error(
                             f"This attempt failed with the following output: {traceback.format_exc()}"
                         )
