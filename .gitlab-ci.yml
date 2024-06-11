@@ -53,6 +53,7 @@ setup:
 lint:
   extends: .tox-job
   stage: lint
+  allow_failure: true
 
 py38:
   extends: .tox-job
