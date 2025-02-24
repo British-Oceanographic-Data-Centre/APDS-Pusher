@@ -1,4 +1,5 @@
 """Methods to deal with getting and displaying version info."""
+
 from importlib.metadata import version as importlib_version
 
 import requests

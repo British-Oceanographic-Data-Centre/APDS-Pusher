@@ -1,4 +1,5 @@
 """Test configuration parser."""
+
 from dataclasses import asdict
 from pathlib import Path
 
