@@ -188,7 +188,7 @@ def pusher_group(ctx: click.Context, version: bool) -> None:
     help="Set app off in trace move (very verbos logging) or not (default is not)",
 )
 @click.command()
-def start(  # pylint: disable=too-many-arguments, too-many-locals
+def start(  # pylint: disable=too-many-arguments, too-many-locals, too-many-positional-arguments
     deployment_id: str,
     data_directory: Path,
     config_file: Path,
@@ -340,13 +340,13 @@ def stop(
     help="Set app off in trace move (very verbos logging) or not (default is not)",
 )
 @click.command()
-def recovery(  # pylint: disable=too-many-arguments, too-many-locals
+def recovery(  # pylint: disable=too-many-arguments, too-many-positional-arguments
     deployment_id: str,
-    data_directory: Path,
+    data_directory: Path,  # pylint: disable=unused-argument
     config_file: Path,
-    is_production: bool,
-    is_dry_run: bool,
-    is_recursive: bool,
+    is_production: bool,  # pylint: disable=unused-argument
+    is_dry_run: bool,  # pylint: disable=unused-argument
+    is_recursive: bool,  # pylint: disable=unused-argument
     trace_on: bool,
 ) -> None:
     """Accept command line arguments and passes them to verification function."""
