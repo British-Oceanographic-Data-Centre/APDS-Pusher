@@ -207,9 +207,9 @@ def start(  # pylint: disable=too-many-arguments, too-many-locals
     s_logger.info("Current apds-pusher version: %s", get_current_version())
 
     # add to list of active deployments
-    # result, deployment_file = check_add_active_deployments(deployment_id, config)
-    # if result:
-    #    click.echo(f"Archival for deployment id {deployment_id} started")
+    result, deployment_file = check_add_active_deployments(deployment_id, config)
+    if result:
+        click.echo(f"Archival for deployment id {deployment_id} started")
 
     # follow the Auth device flow to allow a user to log in via a 3rd party system
     device_code_dtls = device_auth.authenticate(config)
