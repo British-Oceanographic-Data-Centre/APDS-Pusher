@@ -72,7 +72,7 @@ def return_existing_glider_files(bodc_archive_url: str, deployment_id: str) -> S
     return all_filenames
 
 
-def send_to_archive_api(file_location: Path, deployment_id: str, access_token: str, bodc_archive_url: str) -> str:
+def send_to_archive_api(file_location: Path, deployment_id: str, access_token: str, bodc_archive_url: str, mode:str) -> str:
     """Send a file to the Archive API.
 
     The function constructs the URL needed for the API call, it then
@@ -83,14 +83,16 @@ def send_to_archive_api(file_location: Path, deployment_id: str, access_token: s
         depoyment_id: Used to build part of the URL.
         access_token: Sent in the headers to the Archive API.
         bodc_archive_url: The url for the archive, passed in from config file.
+        mode: The mode can be NRT or Recovery.
 
 
     Returns:
         A string to inform the result of the API call.
     """
+    archive_mode = "archiveFile" if mode == "start" else "archiveRecovery"
     url = urljoin(
         bodc_archive_url,
-        f"archiveFile/{deployment_id}?"
+        f"{archive_mode}/{deployment_id}?"
         f"relativePath={file_location.name}&hostPath=/{file_location.parent.resolve()}/",
     )
     # Populate the headers with the access token

@@ -118,6 +118,77 @@ def initialise_system_logging() -> None:
     """Sets up the file and system logging."""
     return
 
+def process_deployment(
+    deployment_id: str,
+    data_directory: Path,
+    config_file: Path,
+    is_production: bool,
+    is_dry_run: bool,
+    is_recursive: bool,
+    trace_on: bool,
+    command: str
+) -> None:
+    """Reusable function to handle start and recovery logic.
+    Handles the deployment process including authentication and file archival."""
+    config = load_configuration_file(config_file)
+
+    print(f"The trace is: {trace_on}")
+
+    s_logger = SystemLogger(deployment_id, config.log_file_location, config.deployment_location, trace=trace_on)
+    s_logger.debug("The system logger for %s has been setup!", deployment_id)
+    s_logger.info("Current apds-pusher version: %s", get_current_version())
+
+    # Add to list of active deployments
+    result, deployment_file = check_add_active_deployments(deployment_id, config)
+
+    if result:
+        click.echo(f"{command.capitalize()} for deployment id {deployment_id}")
+
+    # Follow the Auth device flow to allow a user to log in via a 3rd party system
+    device_code_dtls = device_auth.authenticate(config)
+
+    # Construct dictionary to hold data presented to end user for Authentication
+    device_code_keys = ["url", "user_code", "expires_in", "device_code", "interval"]
+    device_response = dict(zip(device_code_keys, device_code_dtls))
+
+    click.echo(
+        f"URL to authenticate: {device_response['url']} \n"
+        f"User code: {device_response['user_code']} \n"
+        f"Expires in: {device_response['expires_in']} seconds"
+    )
+
+    # Filter dictionary to send necessary keys to get access token
+    response = {
+        key: value for key, value in device_response.items() if key in ["device_code", "interval", "expires_in"]
+    }
+
+    # Send dictionary and config to complete authentication
+    tokens = device_auth.receive_access_token_from_device_code(response, config)
+    s_logger.debug("Auth setup complete")
+    access_token = tokens["access_token"]
+    refresh_token = tokens["refresh_token"]
+
+    # Call the file archival passing the access_token
+    try:
+        pusher = filepusher.FilePusher(
+            deployment_id,
+            data_directory,
+            config,
+            is_production,
+            is_recursive,
+            is_dry_run,
+            access_token,
+            refresh_token,
+            deployment_file,
+            s_logger,
+            command
+        )
+        s_logger.debug("Starting the pusher for %s using data from %s", deployment_id, data_directory)
+        pusher.run()
+    except Exception as e_obj:  # pylint: disable=broad-except
+        s_logger.debug("An error happened on deploy %s using data from %s", deployment_id, data_directory)
+        s_logger.error(str(e_obj))
+        s_logger.debug(traceback.format_exc())
 
 @click.group(invoke_without_command=True)
 @click.option("--version", "version", flag_value=True, is_flag=True, show_default=True, help="display version info")
@@ -198,64 +269,16 @@ def start(  # pylint: disable=too-many-arguments, too-many-locals
     trace_on: bool,
 ) -> None:
     """Accept command line arguments and passes them to verification function."""
-    config = load_configuration_file(config_file)
-
-    print(f"the trace is: {trace_on}")
-
-    s_logger = SystemLogger(deployment_id, config.log_file_location, config.deployment_location, trace=trace_on)
-    s_logger.debug("The system logger for %s has been setup!", deployment_id)
-    s_logger.info("Current apds-pusher version: %s", get_current_version())
-
-    # add to list of active deployments
-    result, deployment_file = check_add_active_deployments(deployment_id, config)
-    if result:
-        click.echo(f"Archival for deployment id {deployment_id} started")
-
-    # follow the Auth device flow to allow a user to log in via a 3rd party system
-    device_code_dtls = device_auth.authenticate(config)
-
-    # Construct dictionary to hold data presented to end user for Authenticationm
-    device_code_keys = ["url", "user_code", "expires_in", "device_code", "interval"]
-    device_response = dict(zip(device_code_keys, device_code_dtls))
-
-    click.echo(
-        f"URL to authenticate: {device_response['url']} \
-        \nUser code: {device_response['user_code']} \
-        \nExpires in: {device_response['expires_in']} seconds"
+    process_deployment(
+        deployment_id,
+        data_directory,
+        config_file,
+        is_production,
+        is_dry_run,
+        is_recursive,
+        trace_on,
+        "NRT"
     )
-
-    # Filter dictionary to send necessary keys to get access token
-    response = {
-        key: value for key, value in device_response.items() if key in ["device_code", "interval", "expires_in"]
-    }
-
-    # Send dictionary and config to complete authentication
-    tokens = device_auth.receive_access_token_from_device_code(response, config)
-    s_logger.debug("Auth setup complete")
-    access_token = tokens["access_token"]
-    refresh_token = tokens["refresh_token"]
-
-    # call the file archival passing the access_token
-    try:
-        pusher = filepusher.FilePusher(
-            deployment_id,
-            data_directory,
-            config,
-            is_production,
-            is_recursive,
-            is_dry_run,
-            access_token,
-            refresh_token,
-            deployment_file,
-            s_logger,
-        )
-        s_logger.debug("Starting the pusher for %s using data from %s", deployment_id, data_directory)
-        pusher.run()
-    except Exception as e_obj:  # pylint: disable=broad-except
-        s_logger.debug("An error happen on deploy %s using data from %s", deployment_id, data_directory)
-        s_logger.error(str(e_obj))
-        s_logger.debug(traceback.format_exc())
-
 
 # to stop a deployment!
 @click.command()
@@ -350,12 +373,16 @@ def recovery(  # pylint: disable=too-many-arguments, too-many-locals
     trace_on: bool,
 ) -> None:
     """Accept command line arguments and passes them to verification function."""
-    config = load_configuration_file(config_file)
-
-    s_logger = SystemLogger(deployment_id, config.log_file_location, config.deployment_location, trace=trace_on)
-    s_logger.debug("The system logger for %s has been setup!", deployment_id)
-    s_logger.info("Current apds-pusher version: %s", get_current_version())
-    s_logger.info("Files is going to be pulled for the recovered deployment")
+    process_deployment(
+        deployment_id,
+        data_directory,
+        config_file,
+        is_production,
+        is_dry_run,
+        is_recursive,
+        trace_on,
+        "Recovery"
+    )
 
 
 pusher_group.add_command(start)

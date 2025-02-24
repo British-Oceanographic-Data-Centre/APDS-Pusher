@@ -36,6 +36,7 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
         refresh_token: str,
         deployment_file: Path,
         log: SystemLogger,
+        mode:str
     ):
         """Setup for File Pusher."""
         self.deployment_id = deployment_id
@@ -48,6 +49,7 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
         self.refresh_token = refresh_token
         self.deployment_file = deployment_file
         self.system_logger = log
+        self.mode = mode
 
         # Begin the logging
         self.initialise_logging()
@@ -239,7 +241,7 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
                 while attempts < 3:
                     try:
                         response = send_to_archive_api(
-                            file, self.deployment_id, self.access_token, self.config.bodc_archive_url
+                            file, self.deployment_id, self.access_token, self.config.bodc_archive_url, self.mode
                         )
                         if response == "Success":
                             self.system_logger.debug("ok")
