@@ -1,4 +1,5 @@
 """APDS command line tool to perform simple verification of inputs."""
+
 import json
 import sys
 import time
@@ -206,9 +207,9 @@ def start(  # pylint: disable=too-many-arguments, too-many-locals
     s_logger.info("Current apds-pusher version: %s", get_current_version())
 
     # add to list of active deployments
-    result, deployment_file = check_add_active_deployments(deployment_id, config)
-    if result:
-        click.echo(f"Archival for deployment id {deployment_id} started")
+    # result, deployment_file = check_add_active_deployments(deployment_id, config)
+    # if result:
+    #    click.echo(f"Archival for deployment id {deployment_id} started")
 
     # follow the Auth device flow to allow a user to log in via a 3rd party system
     device_code_dtls = device_auth.authenticate(config)
@@ -288,8 +289,78 @@ def stop(
         click.echo(f"Archival for deployment id {deployment_id} will be stopped")
 
 
+# to recover a deployment!
+@click.option(
+    "--deployment-id",
+    required=True,
+    type=str,
+    callback=verify_string_not_empty,
+    help="The ID for the specific deployment being recovered.",
+)
+@click.option(
+    "--data-directory",
+    required=True,
+    type=click.Path(exists=True, file_okay=False, path_type=Path),
+    help="Full path to the directory to pick the zipped files from.",
+)
+@click.option(
+    "--config-file",
+    required=True,
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    help="Full path to config file used for authentication.",
+)
+@click.option(
+    "--production/--non-production",
+    "is_production",
+    default=False,
+    show_default=True,
+    help="Use this flag to switch between production and non-production environments.",
+)
+@click.option(
+    "--dry-run/--no-dry-run",
+    "is_dry_run",
+    default=False,
+    show_default=True,
+    help="Use this flag to switch between a regular run and a dry run send of files.",
+)
+@click.option(
+    "--recursive/--non-recursive",
+    "is_recursive",
+    default=True,
+    show_default=True,
+    help="Use this flag to switch between recursive and non-recursive searching of files.",
+)
+@click.option(
+    "-t",
+    "--trace",
+    "trace_on",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="Set app off in trace move (very verbos logging) or not (default is not)",
+)
+@click.command()
+def recovery(  # pylint: disable=too-many-arguments, too-many-locals
+    deployment_id: str,
+    data_directory: Path,
+    config_file: Path,
+    is_production: bool,
+    is_dry_run: bool,
+    is_recursive: bool,
+    trace_on: bool,
+) -> None:
+    """Accept command line arguments and passes them to verification function."""
+    config = load_configuration_file(config_file)
+
+    s_logger = SystemLogger(deployment_id, config.log_file_location, config.deployment_location, trace=trace_on)
+    s_logger.debug("The system logger for %s has been setup!", deployment_id)
+    s_logger.info("Current apds-pusher version: %s", get_current_version())
+    s_logger.info("Files is going to be pulled for the recovered deployment")
+
+
 pusher_group.add_command(start)
 pusher_group.add_command(stop)
+pusher_group.add_command(recovery)
 
 if __name__ == "__main__":
     pusher_group()  # pylint: disable=no-value-for-parameter
