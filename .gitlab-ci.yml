@@ -61,7 +61,8 @@ py38:
   artifacts:
     reports:
       junit: junit.xml
-      cobertura: coverage.xml
+    paths:
+      - coverage.xml
 
 build:
   extends: .tox-job
