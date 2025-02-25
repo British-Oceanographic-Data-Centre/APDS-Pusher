@@ -341,7 +341,8 @@ def stop(
     help="Set app off in trace move (very verbos logging) or not (default is not)",
 )
 @click.command()
-def recovery(  # pylint: disable=too-many-arguments, too-many-positional-arguments
+def recovery(  # pylint: disable=too-many-arguments
+    *,
     deployment_id: str,
     data_directory: Path,  # pylint: disable=unused-argument
     config_file: Path,
