@@ -138,8 +138,8 @@ def process_deployment(
     s_logger.debug("The system logger for %s has been setup!", deployment_id)
     s_logger.info("Current apds-pusher version: %s", get_current_version())
 
-    # Add to list of active deployments
-    result, deployment_file = check_add_active_deployments(deployment_id, config)
+    if (check_active_dep := command == "start"):
+        result, deployment_file = check_add_active_deployments(deployment_id, config)
 
     if result:
         click.echo(f"{command.capitalize()} for deployment id {deployment_id}")
