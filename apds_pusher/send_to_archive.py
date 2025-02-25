@@ -1,7 +1,9 @@
 """Program to interact with the Archive API."""
+
 from pathlib import Path
 from typing import Set
 from urllib.parse import urljoin
+from apds_pusher.systemlogger import SystemLogger
 
 import requests as rq
 
@@ -72,7 +74,7 @@ def return_existing_glider_files(bodc_archive_url: str, deployment_id: str) -> S
     return all_filenames
 
 
-def send_to_archive_api(file_location: Path, deployment_id: str, access_token: str, bodc_archive_url: str, mode:str) -> str:
+def send_to_archive_api(file_location: Path, deployment_id: str, access_token: str, bodc_archive_url: str, mode:str ,logger: SystemLogger,) -> str:
     """Send a file to the Archive API.
 
     The function constructs the URL needed for the API call, it then
@@ -84,6 +86,7 @@ def send_to_archive_api(file_location: Path, deployment_id: str, access_token: s
         access_token: Sent in the headers to the Archive API.
         bodc_archive_url: The url for the archive, passed in from config file.
         mode: The mode can be NRT or Recovery.
+        log: A system logger
 
 
     Returns:
@@ -93,8 +96,12 @@ def send_to_archive_api(file_location: Path, deployment_id: str, access_token: s
     url = urljoin(
         bodc_archive_url,
         f"{archive_mode}/{deployment_id}?"
-        f"relativePath={file_location.name}&hostPath=/{file_location.parent.resolve()}/",
     )
+    
+    if mode == "start":
+        url += f"relativePath={file_location.name}&hostPath=/{file_location.parent.resolve()}/"
+
+        
     # Populate the headers with the access token
     headers = {"Authorization": f"Bearer {access_token}"}
     with open(
@@ -111,13 +118,17 @@ def send_to_archive_api(file_location: Path, deployment_id: str, access_token: s
                 ),
             )
         ]
-
     response = rq.request("POST", url, headers=headers, files=files, timeout=600)  # type: ignore
 
     if "500 Internal Server Error" in response.text:
+        logger.error(f"Exception caught during archive: {FileUploadError}")
         raise FileUploadError
     if "401 Unauthorized" in response.text:
+        logger.error(f"Authentication Exception caught during archive: {AuthenticationError}")
         raise AuthenticationError
     if "File Archive Successful" in response.text:
+        logger.info(f"Successfully archived🎉")
         return "Success"
-    return "Fail"
+    else:
+        logger.info(f"Failed to archive.😒")
+        return "Fail"

@@ -39,34 +39,37 @@ def test_click_exception_on_parse_error(mocker, config_path, exception_type):
         __main__.load_configuration_file(config_path)
 
 
-def test_recovery_command(config_path, mocker, tmp_path):
+def test_recovery_command(config_path, tmp_path):
+    """Checking the Recovery command"""
     # Mock the load_configuration_file function
-    config = __main__.load_configuration_file(config_path)
-    mock_pusher_group = mocker.patch('apds_pusher.__main__.pusher_group')
     data_directory = tmp_path / "data"
     data_directory.mkdir()
-    
+
     runner = CliRunner()
     result = runner.invoke(
         recovery,
         [
-            "--deployment-id", "test-deployment",
-            "--data-directory", str(data_directory),
-            "--config-file", str(config_path),
+            "--deployment-id",
+            "test-deployment",
+            "--data-directory",
+            str(data_directory),
+            "--config-file",
+            str(config_path),
             "--production",
             "--dry-run",
             "--recursive",
             "--trace",
-        ]
+        ],
     )
-    
+
     assert result.exit_code == 0, result.output
     assert "Files is going to be pulled for the recovered deployment" in result.output
+
 
 def test_recovery_missing_args():
     """Test the recovery command with missing required arguments."""
     runner = CliRunner()
     result = runner.invoke(recovery, [])
-    
+
     assert result.exit_code != 0
     assert "Usage: recovery" in result.output  # More flexible assertion

@@ -1,4 +1,5 @@
 """Logging class used keep track files of sent files."""
+
 import sys
 from datetime import datetime as dt
 from pathlib import Path

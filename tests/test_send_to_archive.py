@@ -1,4 +1,5 @@
 """Tests for code which interacts with the API."""
+
 import pytest
 import responses
 

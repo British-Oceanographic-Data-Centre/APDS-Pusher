@@ -1,5 +1,5 @@
 # pylint: disable=duplicate-code
-"""Test token refresher. """
+"""Test token refresher."""
 
 import pytest
 import requests

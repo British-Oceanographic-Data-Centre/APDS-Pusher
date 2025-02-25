@@ -1,4 +1,5 @@
 """Program to orchestrate push of files to the Archive API."""
+
 import time
 import traceback
 from datetime import datetime
@@ -24,6 +25,7 @@ from apds_pusher.token_refresher import get_access_token_from_refresh_token
 class FilePusher:  # pylint: disable=too-many-instance-attributes
     """Class for managing interaction with Archive API."""
 
+    # pylint: disable=R0913,R0917
     def __init__(  # pylint: disable=too-many-arguments
         self,
         deployment_id: str,
@@ -241,7 +243,7 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
                 while attempts < 3:
                     try:
                         response = send_to_archive_api(
-                            file, self.deployment_id, self.access_token, self.config.bodc_archive_url, self.mode
+                            file, self.deployment_id, self.access_token, self.config.bodc_archive_url, self.mode,self.system_logger
                         )
                         if response == "Success":
                             self.system_logger.debug("ok")
@@ -261,9 +263,10 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
                         self.system_logger.debug(f"{str(fue_obj)}")
                     except ConnectTimeout as exc_obj:
                         self.system_logger.error(f"Connection timed out during transfer of {file}")
-                        self.system_logger.error(
-                            f"This attempt failed with the following full URL: {exc_obj.request.url}"
-                        )
+                        if exc_obj.request:
+                            self.system_logger.error(
+                                f"This attempt failed with the following full URL: {exc_obj.request.url}"
+                            )
                         self.system_logger.error(
                             f"This attempt failed with the following output: {traceback.format_exc()}"
                         )

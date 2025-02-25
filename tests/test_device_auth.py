@@ -1,5 +1,4 @@
-"""Test default authentication. """
-
+"""Test default authentication."""
 
 from queue import Queue
 

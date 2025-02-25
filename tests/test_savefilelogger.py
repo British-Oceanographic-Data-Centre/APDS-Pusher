@@ -1,4 +1,5 @@
 """Tests for the savefile logger."""
+
 import sys
 from pathlib import Path
 

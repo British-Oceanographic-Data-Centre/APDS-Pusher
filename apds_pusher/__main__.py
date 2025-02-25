@@ -138,8 +138,7 @@ def process_deployment(
     s_logger.debug("The system logger for %s has been setup!", deployment_id)
     s_logger.info("Current apds-pusher version: %s", get_current_version())
 
-    if (check_active_dep := command == "start"):
-        result, deployment_file = check_add_active_deployments(deployment_id, config)
+    result, deployment_file = check_add_active_deployments(deployment_id, config)
 
     if result:
         click.echo(f"{command.capitalize()} for deployment id {deployment_id}")
@@ -260,6 +259,7 @@ def pusher_group(ctx: click.Context, version: bool) -> None:
 )
 @click.command()
 def start(  # pylint: disable=too-many-arguments, too-many-locals
+    *,
     deployment_id: str,
     data_directory: Path,
     config_file: Path,
@@ -312,7 +312,7 @@ def stop(
         click.echo(f"Archival for deployment id {deployment_id} will be stopped")
 
 
-# to recover a deployment!
+# when a glider or slocum is recovered
 @click.option(
     "--deployment-id",
     required=True,
@@ -363,11 +363,12 @@ def stop(
     help="Set app off in trace move (very verbos logging) or not (default is not)",
 )
 @click.command()
-def recovery(  # pylint: disable=too-many-arguments, too-many-locals
+def recovery(  # pylint: disable=too-many-arguments
+    *,
     deployment_id: str,
     data_directory: Path,
     config_file: Path,
-    is_production: bool,
+    is_production: bool, 
     is_dry_run: bool,
     is_recursive: bool,
     trace_on: bool,
@@ -383,7 +384,6 @@ def recovery(  # pylint: disable=too-many-arguments, too-many-locals
         trace_on,
         "Recovery"
     )
-
 
 pusher_group.add_command(start)
 pusher_group.add_command(stop)
