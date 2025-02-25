@@ -238,7 +238,7 @@ def start(  # pylint: disable=too-many-arguments, too-many-locals
 
     # call the file archival passing the access_token
     try:
-        pusher = filepusher.FilePusher(
+        pusher = filepusher.FilePusher(  # pylint: disable=too-many-arguments
             deployment_id,
             data_directory,
             config,

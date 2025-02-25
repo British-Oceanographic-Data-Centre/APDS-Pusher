@@ -25,7 +25,8 @@ from apds_pusher.token_refresher import get_access_token_from_refresh_token
 class FilePusher:  # pylint: disable=too-many-instance-attributes
     """Class for managing interaction with Archive API."""
 
-    def __init__(  # pylint: disable=too-many-arguments, too-many-positional-arguments
+    # pylint: disable=R0913,R0917
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         deployment_id: str,
         deployment_location: Path,
