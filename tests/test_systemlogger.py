@@ -1,4 +1,5 @@
 """Tests for the system logger."""
+
 import sys
 from pathlib import Path
 

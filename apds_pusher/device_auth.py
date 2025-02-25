@@ -1,6 +1,5 @@
 """Device flow authentication .A user code and tiny url is provided."""
 
-
 import re
 from typing import Dict, Tuple
 
@@ -29,11 +28,12 @@ def get_device_code(client_id: str, auth2_audience: str, auth_domain: str) -> Di
         the response payload containing the user code and tinyurl else will raise an exception
     """
     payload = {
-        "scope": "openid email offline_access",
+        "scope": "openid",
         "audience": auth2_audience,
         "client_id": client_id,
     }
-    headers = {"content-type": "application/json"}
+    headers = {"content-type": "application/x-www-form-urlencoded"}
+    print(f"https://{auth_domain}/oauth/device/code, headers={headers}, json={payload}, timeout=600")
     try:
         res = requests.post("https://" + auth_domain + "/oauth/device/code", headers=headers, json=payload, timeout=600)
         res.raise_for_status()
@@ -127,7 +127,7 @@ def receive_access_token_from_device_code(device_code_response: Dict, config: Co
             step=device_code_response["interval"],
             timeout=device_code_response["expires_in"],
         )
-
+        print(access_token)
     except polling2.TimeoutException as te_error:
         while not te_error.values.empty():
             # check if device code has expired and raise the exception

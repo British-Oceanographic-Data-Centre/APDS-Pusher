@@ -1,4 +1,5 @@
 """Program to interact with the Archive API."""
+
 from pathlib import Path
 from typing import Set
 from urllib.parse import urljoin

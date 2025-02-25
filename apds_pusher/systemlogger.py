@@ -1,4 +1,5 @@
 """System logger."""
+
 import logging
 from pathlib import Path
 

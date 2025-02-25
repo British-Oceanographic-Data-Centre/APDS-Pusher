@@ -1,4 +1,5 @@
 """Parser for APDS pusher configuration files."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass, fields
@@ -75,7 +76,6 @@ class Configuration:
                 data_dict[field] = Path(data_dict[field]).expanduser()
             except TypeError:
                 raise InvalidPathError(f"{field} is an invalid path.") from None
-
         return cls(**data_dict)
 
     @property
