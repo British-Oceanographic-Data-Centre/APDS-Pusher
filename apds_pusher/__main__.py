@@ -188,7 +188,8 @@ def pusher_group(ctx: click.Context, version: bool) -> None:
     help="Set app off in trace move (very verbos logging) or not (default is not)",
 )
 @click.command()
-def start(  # pylint: disable=too-many-arguments, too-many-locals, too-many-positional-arguments
+def start(  # pylint: disable=too-many-arguments, too-many-locals
+    *,
     deployment_id: str,
     data_directory: Path,
     config_file: Path,
