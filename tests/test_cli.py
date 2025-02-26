@@ -1,7 +1,5 @@
 """Test CLI."""
 
-
-
 import click
 import pytest
 from click.testing import CliRunner
@@ -42,7 +40,11 @@ def test_load_configuration_file(config_path):
 )
 def test_click_exception_on_parse_error(mocker, config_path, exception_type):
     """Check that the correct exception is raised when a parsing error occurs."""
-    mocker.patch.object(config_parser.Configuration, "from_dict_validated", side_effect=exception_type("an exception"))
+    mocker.patch.object(
+        config_parser.Configuration,
+        "from_dict_validated",
+        side_effect=exception_type("an exception"),
+    )
 
     with pytest.raises(click.ClickException):
         load_configuration_file(config_path)
@@ -74,7 +76,14 @@ def test_recovery_command(config_path_recovery, tmp_path, mocker):
 
     assert result.exit_code == 0, result.output
     mock_process.assert_called_once_with(
-        "test-deployment", data_directory, config_path_recovery, True, True, False, True, "Recovery"
+        "test-deployment",
+        data_directory,
+        config_path_recovery,
+        True,
+        True,
+        False,
+        True,
+        "Recovery",
     )
 
 
