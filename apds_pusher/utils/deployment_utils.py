@@ -1,4 +1,4 @@
-"""utilities for file pusher"""
+"""utilities for file pusher."""
 
 import json
 import sys

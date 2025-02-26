@@ -45,6 +45,7 @@ def initialise_system_logging() -> None:
     return
 
 
+# pylint: disable=R0917
 def process_deployment(  # pylint: disable=too-many-arguments,too-many-locals
     deployment_id: str,
     data_directory: Path,
@@ -55,8 +56,7 @@ def process_deployment(  # pylint: disable=too-many-arguments,too-many-locals
     trace_on: bool,
     command: str,
 ) -> None:
-    """Reusable function to handle start and recovery logic.
-    Handles the deployment process including authentication and file archival."""
+    """Reusable function to handle start and recovery logic."""
     config = load_configuration_file(config_file)
 
     print(f"The trace is: {trace_on}")

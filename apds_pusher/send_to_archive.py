@@ -77,6 +77,7 @@ def return_existing_glider_files(bodc_archive_url: str, deployment_id: str) -> S
     return all_filenames
 
 
+# pylint: disable=R0917
 def send_to_archive_api(  # pylint: disable=too-many-arguments,
     file_location: Path,
     deployment_id: str,
@@ -103,10 +104,17 @@ def send_to_archive_api(  # pylint: disable=too-many-arguments,
     Returns:
         A string to inform the result of the API call.
     """
-    archive_mode = "archiveFile" if mode == "NRT" else "archiveRecovery"
+    if mode == "NRT":
+        archive_mode = "archiveFile"
+    elif mode == "Recovery":
+        archive_mode = "archiveRecovery"
+    else:
+        logger.error("Mode selected via the command option is invalid❌")
+        raise ValueError("Invalid mode")
+
     url = urljoin(bodc_archive_url, f"{archive_mode}/{deployment_id}?")
 
-    if mode == "start":
+    if mode == "NRT":
         url += f"relativePath={file_location.name}&hostPath=/{file_location.parent.resolve()}/"
 
     # Populate the headers with the access token
