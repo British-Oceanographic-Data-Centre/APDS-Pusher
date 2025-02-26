@@ -36,7 +36,7 @@ def test_instance_creation(tmp_path, config):
     glider_dir = tmp_path / "gliders/"
     glider_dir.mkdir()
     log = logging.getLogger("test")
-    instance = FilePusher("123", glider_dir, config, True, True, True, "", "", "file.txt", log)
+    instance = FilePusher("123", glider_dir, config, True, True, True, "", "", "file.txt", log, "Recovery")
     assert isinstance(instance, FilePusher)
 
 
@@ -56,7 +56,7 @@ def test_retrieve_glider_file_paths(tmp_path, config):
 
     log = logging.getLogger("test")
     # Set up a test instance
-    instance = FilePusher("123", glider_dir, config, True, True, True, "", "", deployment_file, log)
+    instance = FilePusher("123", glider_dir, config, True, True, True, "", "", deployment_file, log, "NRT")
 
     # Call function to attempt to retrieve .tbd, .cac and .sbd files only.
     retrieved_files = instance.retrieve_file_paths(1)

@@ -1,6 +1,5 @@
 """Device flow authentication .A user code and tiny url is provided."""
 
-
 import re
 from typing import Dict, Tuple
 

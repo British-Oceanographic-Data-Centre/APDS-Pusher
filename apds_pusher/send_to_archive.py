@@ -77,7 +77,7 @@ def return_existing_glider_files(bodc_archive_url: str, deployment_id: str) -> S
     return all_filenames
 
 
-def send_to_archive_api(
+def send_to_archive_api(  # pylint: disable=too-many-arguments,
     file_location: Path,
     deployment_id: str,
     access_token: str,

@@ -1,16 +1,12 @@
 """APDS command line tool to perform simple verification of inputs."""
 
-import json
 import sys
-import time
 import traceback
 from pathlib import Path
-from typing import Tuple
 
 import click
 
 from apds_pusher import device_auth, filepusher
-from apds_pusher.config_parser import Configuration, ParserException
 from apds_pusher.get_version_info import get_current_version, get_github_tag_info, get_latest_install_command
 from apds_pusher.systemlogger import SystemLogger
 from apds_pusher.utils.deployment_utils import (
@@ -49,7 +45,7 @@ def initialise_system_logging() -> None:
     return
 
 
-def process_deployment(
+def process_deployment(  # pylint: disable=too-many-arguments,too-many-locals
     deployment_id: str,
     data_directory: Path,
     config_file: Path,
