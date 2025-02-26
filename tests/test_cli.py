@@ -1,16 +1,14 @@
 """Test CLI."""
 
 from pathlib import Path
+
 import click
 import pytest
 from click.testing import CliRunner
 
-
 from apds_pusher import __main__, config_parser
 from apds_pusher.__main__ import recovery
-from apds_pusher.utils.deployment_utils import (
-    load_configuration_file,
-)
+from apds_pusher.utils.deployment_utils import load_configuration_file
 
 
 @pytest.fixture(name="config_path")

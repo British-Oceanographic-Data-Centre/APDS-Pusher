@@ -7,11 +7,7 @@ from pathlib import Path
 import click
 
 from apds_pusher import device_auth, filepusher
-from apds_pusher.get_version_info import (
-    get_current_version,
-    get_github_tag_info,
-    get_latest_install_command,
-)
+from apds_pusher.get_version_info import get_current_version, get_github_tag_info, get_latest_install_command
 from apds_pusher.systemlogger import SystemLogger
 from apds_pusher.utils.deployment_utils import (
     check_add_active_deployments,
