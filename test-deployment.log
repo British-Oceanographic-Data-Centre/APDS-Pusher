@@ -1,3 +1,0 @@
-2025-02-24 16:16:32,261 - DEBUG - APDS:recovery:356 :- The system logger for test-deployment has been setup!
-2025-02-24 16:16:32,263 - INFO - APDS:recovery:357 :- Current apds-pusher version: v1.5.3.dev0+g620199c.d20250224
-2025-02-24 16:16:32,263 - INFO - APDS:recovery:358 :- Files is going to be pulled for the recovered deployment

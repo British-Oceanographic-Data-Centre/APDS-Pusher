@@ -9,6 +9,7 @@ class AccessCodeError(Exception):
     """Exception raised when errors in the refreshed access token."""
 
 
+# pylint: disable=R0801
 def get_access_token_from_refresh_token(refresh_token: str, config: Configuration) -> str:
     """Retrieve the access tokens for expired tokens using refresh tokens.
 
@@ -32,7 +33,12 @@ def get_access_token_from_refresh_token(refresh_token: str, config: Configuratio
     }
     headers = {"content-type": "application/json"}
     try:
-        res = requests.post("https://" + auth_domain + "/oauth/token", headers=headers, json=payload, timeout=600)
+        res = requests.post(
+            "https://" + auth_domain + "/oauth/token",
+            headers=headers,
+            json=payload,
+            timeout=600,
+        )
         res.raise_for_status()
 
     except requests.exceptions.HTTPError as errhttp:

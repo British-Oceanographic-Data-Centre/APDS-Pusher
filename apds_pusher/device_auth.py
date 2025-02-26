@@ -13,6 +13,7 @@ class DeviceCodeError(Exception):
     """Exception raised when errors in the refreshed access token."""
 
 
+# pylint: disable=R0801
 def get_device_code(client_id: str, auth2_audience: str, auth_domain: str) -> Dict:
     """Method to authorize the device.
 
@@ -28,14 +29,18 @@ def get_device_code(client_id: str, auth2_audience: str, auth_domain: str) -> Di
         the response payload containing the user code and tinyurl else will raise an exception
     """
     payload = {
-        "scope": "openid",
+        "scope": "openid email offline_access",
         "audience": auth2_audience,
         "client_id": client_id,
     }
-    headers = {"content-type": "application/x-www-form-urlencoded"}
-    print(f"https://{auth_domain}/oauth/device/code, headers={headers}, json={payload}, timeout=600")
+    headers = {"content-type": "application/json"}
     try:
-        res = requests.post("https://" + auth_domain + "/oauth/device/code", headers=headers, json=payload, timeout=600)
+        res = requests.post(
+            "https://" + auth_domain + "/oauth/device/code",
+            headers=headers,
+            json=payload,
+            timeout=600,
+        )
         res.raise_for_status()
 
     except requests.exceptions.HTTPError as errhttp:
@@ -127,7 +132,7 @@ def receive_access_token_from_device_code(device_code_response: Dict, config: Co
             step=device_code_response["interval"],
             timeout=device_code_response["expires_in"],
         )
-        print(access_token)
+
     except polling2.TimeoutException as te_error:
         while not te_error.values.empty():
             # check if device code has expired and raise the exception
