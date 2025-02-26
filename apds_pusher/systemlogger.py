@@ -8,7 +8,11 @@ class SystemLogger(logging.getLoggerClass()):  # type: ignore
     """A class used to log messages to console and file."""
 
     def __init__(
-        self, deployment_id: str, log_file_location: Path, deployment_location: Path, trace: bool = False
+        self,
+        deployment_id: str,
+        log_file_location: Path,
+        deployment_location: Path,
+        trace: bool = False,
     ) -> None:
         """Set up the SystemLogger."""
         super().__init__("APDS")

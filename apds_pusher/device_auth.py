@@ -13,6 +13,7 @@ class DeviceCodeError(Exception):
     """Exception raised when errors in the refreshed access token."""
 
 
+# pylint: disable=R0801
 def get_device_code(client_id: str, auth2_audience: str, auth_domain: str) -> Dict:
     """Method to authorize the device.
 
@@ -34,7 +35,12 @@ def get_device_code(client_id: str, auth2_audience: str, auth_domain: str) -> Di
     }
     headers = {"content-type": "application/json"}
     try:
-        res = requests.post("https://" + auth_domain + "/oauth/device/code", headers=headers, json=payload, timeout=600)
+        res = requests.post(
+            "https://" + auth_domain + "/oauth/device/code",
+            headers=headers,
+            json=payload,
+            timeout=600,
+        )
         res.raise_for_status()
 
     except requests.exceptions.HTTPError as errhttp:

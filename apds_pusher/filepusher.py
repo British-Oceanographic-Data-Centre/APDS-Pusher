@@ -144,7 +144,14 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
 
             if cycle_number > 1:
                 self.system_logger.debug(f"{cycle_number} is greater than 1 - this mean we will filter results")
-                file_paths.extend(list(filter(lambda file: file.lstat().st_mtime > deployment_time, unfiltered)))
+                file_paths.extend(
+                    list(
+                        filter(
+                            lambda file: file.lstat().st_mtime > deployment_time,
+                            unfiltered,
+                        )
+                    )
+                )
             else:
                 self.system_logger.debug(f"{cycle_number} is less than 1 - this mean we will not filter results")
                 file_paths.extend(unfiltered)

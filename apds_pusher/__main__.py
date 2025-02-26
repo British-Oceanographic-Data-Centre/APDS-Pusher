@@ -7,7 +7,11 @@ from pathlib import Path
 import click
 
 from apds_pusher import device_auth, filepusher
-from apds_pusher.get_version_info import get_current_version, get_github_tag_info, get_latest_install_command
+from apds_pusher.get_version_info import (
+    get_current_version,
+    get_github_tag_info,
+    get_latest_install_command,
+)
 from apds_pusher.systemlogger import SystemLogger
 from apds_pusher.utils.deployment_utils import (
     check_add_active_deployments,
@@ -61,7 +65,12 @@ def process_deployment(  # pylint: disable=too-many-arguments,too-many-locals
 
     print(f"The trace is: {trace_on}")
 
-    s_logger = SystemLogger(deployment_id, config.log_file_location, config.deployment_location, trace=trace_on)
+    s_logger = SystemLogger(
+        deployment_id,
+        config.log_file_location,
+        config.deployment_location,
+        trace=trace_on,
+    )
     s_logger.debug("The system logger for %s has been setup!", deployment_id)
     s_logger.info("Current apds-pusher version: %s", get_current_version())
 
@@ -109,16 +118,31 @@ def process_deployment(  # pylint: disable=too-many-arguments,too-many-locals
             s_logger,
             command,
         )
-        s_logger.debug("Starting the pusher for %s using data from %s", deployment_id, data_directory)
+        s_logger.debug(
+            "Starting the pusher for %s using data from %s",
+            deployment_id,
+            data_directory,
+        )
         pusher.run()
     except Exception as e_obj:  # pylint: disable=broad-except
-        s_logger.debug("An error happened on deploy %s using data from %s", deployment_id, data_directory)
+        s_logger.debug(
+            "An error happened on deploy %s using data from %s",
+            deployment_id,
+            data_directory,
+        )
         s_logger.error(str(e_obj))
         s_logger.debug(traceback.format_exc())
 
 
 @click.group(invoke_without_command=True)
-@click.option("--version", "version", flag_value=True, is_flag=True, show_default=True, help="display version info")
+@click.option(
+    "--version",
+    "version",
+    flag_value=True,
+    is_flag=True,
+    show_default=True,
+    help="display version info",
+)
 @click.pass_context
 def pusher_group(ctx: click.Context, version: bool) -> None:
     """A group of all commands."""
@@ -198,7 +222,14 @@ def start(  # pylint: disable=too-many-arguments, too-many-locals
 ) -> None:
     """Accept command line arguments and passes them to verification function."""
     process_deployment(
-        deployment_id, data_directory, config_file, is_production, is_dry_run, is_recursive, trace_on, "NRT"
+        deployment_id,
+        data_directory,
+        config_file,
+        is_production,
+        is_dry_run,
+        is_recursive,
+        trace_on,
+        "NRT",
     )
 
 
@@ -297,7 +328,14 @@ def recovery(  # pylint: disable=too-many-arguments
 ) -> None:
     """Accept command line arguments and passes them to verification function."""
     process_deployment(
-        deployment_id, data_directory, config_file, is_production, is_dry_run, is_recursive, trace_on, "Recovery"
+        deployment_id,
+        data_directory,
+        config_file,
+        is_production,
+        is_dry_run,
+        is_recursive,
+        trace_on,
+        "Recovery",
     )
 
 
