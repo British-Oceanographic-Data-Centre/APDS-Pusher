@@ -38,7 +38,7 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
         refresh_token: str,
         deployment_file: Path,
         log: SystemLogger,
-        mode:str
+        mode: str,
     ):
         """Setup for File Pusher."""
         self.deployment_id = deployment_id
@@ -242,8 +242,14 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
                 self.system_logger.debug(f"Attempt {attempts}.")
                 while attempts < 3:
                     try:
-                        response = send_to_archive_api(
-                            file, self.deployment_id, self.access_token, self.config.bodc_archive_url, self.mode,self.system_logger
+                        response = send_to_archive_api(  # pylint: disable=too-many-arguments,
+                            file,
+                            self.deployment_id,
+                            self.access_token,
+                            self.config.bodc_archive_url,
+                            self.mode,
+                            self.system_logger,
+                            self.config,
                         )
                         if response == "Success":
                             self.system_logger.debug("ok")
@@ -261,6 +267,11 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
                     except FileUploadError as fue_obj:
                         self.system_logger.error(f"File transfer Failed for: {file}")
                         self.system_logger.debug(f"{str(fue_obj)}")
+
+                    except FileNotFoundError as fue_obj:
+                        self.system_logger.error(f"Archive Endpoint not Found for: {file}")
+                        self.system_logger.debug(f"{str(fue_obj)}")
+
                     except ConnectTimeout as exc_obj:
                         self.system_logger.error(f"Connection timed out during transfer of {file}")
                         if exc_obj.request:
