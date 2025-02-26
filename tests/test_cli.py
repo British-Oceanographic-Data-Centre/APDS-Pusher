@@ -1,10 +1,11 @@
 """Test CLI."""
 
-from pathlib import Path
+
 
 import click
 import pytest
 from click.testing import CliRunner
+from pathlib import Path
 
 from apds_pusher import __main__, config_parser
 from apds_pusher.__main__ import recovery
