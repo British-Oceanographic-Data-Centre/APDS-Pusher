@@ -1,10 +1,35 @@
 # common configuration for python gitlab-ci jobs
 
-stages:
-  - test
-  - build
-  - lint
-  - deploy
+variables:
+  DEPLOY_ENVIRONMENT: "null"
+
+
+include:
+  - project:
+      nocacuk/BODC/software/gitlab_runners
+    ref: master
+    file: v2/python.gitlab-ci.yml
+
+  - project:
+      nocacuk/BODC/software/gitlab_runners
+    ref: master
+    file: v2/bodc.gitlab-ci.yml
+
+  - project:
+      nocacuk/BODC/software/gitlab_runners
+    ref: master
+    file: v2/semver-tags.gitlab-ci.yml
+
+
+# The test commands seen under the testenv section are executed.
+test:
+  extends:
+   - .python-test
+
+# The linting commands seen under the testenv:lint section are executed.
+lint:
+  extends:
+   - .python-lint
 
 # in some cases we only want these items for debugging so factor them out
 .common-before-script: &common-before-script
@@ -25,36 +50,11 @@ stages:
 .common-run-tox: &common-run-tox
   - tox -e ${TOXENV:-$CI_JOB_NAME}
 
-default:
-  tags:
-    - livljobs
-  before_script:
-    - *common-before-script
-    # - conda activate apds-pusher-tox
-
 # hidden base job for running `tox` command jobs
 .tox-job:
   script:
     - *common-run-tox
   <<: *common-rules
-
-lint:
-  extends: .tox-job
-  stage: lint
-
-py310:
-  extends: .tox-job
-  stage: test
-  coverage: '/TOTAL.*\s+(\d+%)$/'
-  artifacts:
-    reports:
-      junit: junit.xml
-    paths:
-      - coverage.xml
-
-build:
-  extends: .tox-job
-  stage: build
 
 docs:
   extends: .tox-job
@@ -80,7 +80,8 @@ pages:
 
 # TODO: not optimal as we rebuild the package
 pypi:
-  extends: build
+  extends:
+   - .python-build
   stage: deploy
   variables:
     TOXENV: "build"
