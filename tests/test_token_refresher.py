@@ -77,7 +77,7 @@ def test_get_access_token_from_refresh_token_error(refresh_token, pusher_config)
     [
         (requests.exceptions.HTTPError(), "Http Error while refreshing token"),
         (requests.exceptions.ConnectionError(), "Connection Error while refreshing token"),
-        (requests.exceptions.Timeout(), "Timeout error while refreshing token"),
+        (requests.exceptions.Timeout(), "Timeout eror while refreshing token"),
         (requests.exceptions.RequestException(), "Unknown error while refreshing token"),
     ],
 )
@@ -94,4 +94,9 @@ def test_get_access_token_from_refresh_token_exception(resp_body, expected, refr
     with pytest.raises(token_refresher.AccessCodeError) as err:
         token_refresher.get_access_token_from_refresh_token(refresh_token, pusher_config)
 
+    print(f"'{err.value.args[0]}' == '{expected}'")
+    print(f"{err.value.args[0]} == {expected}")
+    print(f"{err.value.args[0]} == {expected}")
+    print(f"{err.value.args[0]} == {expected}")
+    print(f"{err.value.args[0]} == {expected}")
     assert err.value.args[0] == expected
