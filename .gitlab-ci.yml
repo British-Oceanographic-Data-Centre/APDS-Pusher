@@ -74,11 +74,6 @@ lint:
 #     - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
 
 # TODO: not optimal as we rebuild the package
-build:
-  extends:
-   - .python-build
-
-# TODO: not optimal as we rebuild the package
 publish:
   extends:
    - .python-build
@@ -87,7 +82,7 @@ publish:
     BUILDPATH: "dist"
   script:
     - *common-run-tox
-    - poetry publish -r "$PYPI_REPO" -u "$PYPI_USER" -p "$PYPI_PASSWORD"
+    - poetry publish -r "$PYPI_REPO" -u "$PYPI_USER" -p "$PYPI_PASSWORD" --build
   rules:
     # push to pypi for any alpha, beta, release candidate, or release
     - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+a\d+$/'
