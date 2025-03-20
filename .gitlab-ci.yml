@@ -30,7 +30,7 @@ default:
     - livljobs
   before_script:
     - *common-before-script
-    - conda activate apds-pusher-tox
+    # - conda activate apds-pusher-tox
 
 # hidden base job for running `tox` command jobs
 .tox-job:
@@ -42,7 +42,7 @@ lint:
   extends: .tox-job
   stage: lint
 
-py38:
+py310:
   extends: .tox-job
   stage: test
   coverage: '/TOTAL.*\s+(\d+%)$/'
