@@ -1,7 +1,6 @@
 """Program to interact with the Archive API."""
 
 from pathlib import Path
-from typing import Set
 from urllib.parse import urljoin
 
 import requests as rq
@@ -43,10 +42,10 @@ def call_holdings_endpoint(bodc_archive_url: str, deployment_id: str) -> dict:
         response.raise_for_status()
         return response.json()
     except rq.exceptions.RequestException:
-        raise HoldingsAccessError  # pylint: disable=W0707
+        raise HoldingsAccessError  # pylint: disable=W0707  # noqa: B904
 
 
-def return_existing_glider_files(bodc_archive_url: str, deployment_id: str) -> Set[str]:
+def return_existing_glider_files(bodc_archive_url: str, deployment_id: str) -> set[str]:
     """Return all filenames for a given deployment.
 
     Function first calls 'call_holdings_endpoint' to handle
@@ -65,10 +64,10 @@ def return_existing_glider_files(bodc_archive_url: str, deployment_id: str) -> S
     response = call_holdings_endpoint(bodc_archive_url, deployment_id)["files"]
 
     # Extract keys which contain the arrays of filenames
-    keys_required = [file for file in response.keys() if (file.endswith("files") and "rxf" not in file)]
+    keys_required = [file for file in response if (file.endswith("files") and "rxf" not in file)]
 
     # Build a master set to hold filenames
-    all_filenames: Set[str] = set()
+    all_filenames: set[str] = set()
 
     # Iterate through each filetype, adding all filenames to master set
     for keys in keys_required:
@@ -78,7 +77,7 @@ def return_existing_glider_files(bodc_archive_url: str, deployment_id: str) -> S
 
 
 # pylint: disable=R0917
-def send_to_archive_api(  # pylint: disable=too-many-arguments,
+def send_to_archive_api(  # pylint: disable=too-many-arguments,  # noqa: D417
     file_location: Path,
     deployment_id: str,
     access_token: str,
@@ -90,11 +89,11 @@ def send_to_archive_api(  # pylint: disable=too-many-arguments,
     """Send a file to the Archive API.
 
     The function constructs the URL needed for the API call, it then
-    makes the call and sends the repsonse back to filepusher.py
+    makes the call and sends the response back to filepusher.py
 
     Args:
         file_location: used to build the relativepath and hostpath args.
-        depoyment_id: Used to build part of the URL.
+        deployment_id: Used to build part of the URL.
         access_token: Sent in the headers to the Archive API.
         bodc_archive_url: The url for the archive, passed in from config file.
         mode: The mode can be NRT or Recovery.
@@ -145,9 +144,8 @@ def send_to_archive_api(  # pylint: disable=too-many-arguments,
         raise FileNotFoundError
     if "File Archive Successful" in response.text:
         logger.info("Successfully archived🎉")
-        if mode == "Recovery":
-            if check_delete_active_deployments(deployment_id, config):
-                logger.info("%s is now going to be stopped on the pusher.", deployment_id)
+        if mode == "Recovery" and check_delete_active_deployments(deployment_id, config):
+            logger.info("%s is now going to be stopped on the pusher.", deployment_id)
         return "Success"
 
     logger.info("Failed to archive.😒")

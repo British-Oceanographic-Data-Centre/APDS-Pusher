@@ -33,7 +33,7 @@ def test_systemlogfile_in_logfile_folder(tmp_path):
 
 
 def test_systemlogfile_in_glider_folder(tmp_path):
-    """Tests that system logger is created in alternate location
+    """Tests that system logger is created in alternate location.
 
     If the logfile argument points to an invalid directory, the program
     will attempt to save the log file in the glider folder. This test passes an invalid
@@ -85,7 +85,7 @@ def test_check_logging_info(tmp_path, capfd, logging_instance):
     # Capture std. out
     _, captured_stdout = capfd.readouterr()
 
-    # Check that the info mesage appears in the file, and in the console
+    # Check that the info message appears in the file, and in the console
     path_to_file = Path(tmp_path / "logs" / "1234.log")
     file_contents = path_to_file.read_text(encoding=sys.getdefaultencoding())
     assert "info message from test" in file_contents
@@ -99,7 +99,7 @@ def test_check_logging_info_trace(tmp_path, capfd, logging_instance_tracer):
     # Capture std. out
     _, captured_stdout = capfd.readouterr()
 
-    # Check that the info mesage appears in the file, and in the console
+    # Check that the info message appears in the file, and in the console
     path_to_file = Path(tmp_path / "logs" / "1234.log")
     file_contents = path_to_file.read_text(encoding=sys.getdefaultencoding())
     assert "info message from test" in file_contents
@@ -113,7 +113,7 @@ def test_check_logging_debug(tmp_path, capfd, logging_instance):
     # Capture std. out
     _, captured_stdout = capfd.readouterr()
 
-    # Check that the info mesage appears in the file, and in the console
+    # Check that the info message appears in the file, and in the console
     path_to_file = Path(tmp_path / "logs", "1234.log")
     file_contents = path_to_file.read_text(encoding=sys.getdefaultencoding())
     assert "debug message from test" not in file_contents
@@ -127,7 +127,7 @@ def test_check_logging_debug_trace(tmp_path, capfd, logging_instance_tracer):
     # Capture std. out
     _, captured_stdout = capfd.readouterr()
 
-    # Check that the info mesage appears in the file, and in the console
+    # Check that the info message appears in the file, and in the console
     path_to_file = Path(tmp_path / "logs", "1234.log")
     file_contents = path_to_file.read_text(encoding=sys.getdefaultencoding())
     assert "debug message from test" in file_contents
@@ -141,7 +141,7 @@ def test_check_logging_warn(tmp_path, capfd, logging_instance):
     # Capture std. out
     _, captured_stdout = capfd.readouterr()
 
-    # Check that the info mesage appears in the file, and in the console
+    # Check that the info message appears in the file, and in the console
     path_to_file = Path(tmp_path / "logs", "1234.log")
     file_contents = path_to_file.read_text(encoding=sys.getdefaultencoding())
     assert "warning message from test" in file_contents
@@ -155,7 +155,7 @@ def test_check_logging_error(tmp_path, capfd, logging_instance):
     # Capture std. out
     _, captured_stdout = capfd.readouterr()
 
-    # Check that the info mesage appears in the file, and in the console
+    # Check that the info message appears in the file, and in the console
     path_to_file = Path(tmp_path / "logs", "1234.log")
     file_contents = path_to_file.read_text(encoding=sys.getdefaultencoding())
     assert "error message from test" in file_contents
@@ -169,7 +169,7 @@ def test_check_logging_critical(tmp_path, capfd, logging_instance):
     # Capture std. out
     _, captured_stdout = capfd.readouterr()
 
-    # Check that the info mesage appears in the file, and in the console
+    # Check that the info message appears in the file, and in the console
     path_to_file = Path(tmp_path / "logs", "1234.log")
     file_contents = path_to_file.read_text(encoding=sys.getdefaultencoding())
     assert "critical message from test" in file_contents

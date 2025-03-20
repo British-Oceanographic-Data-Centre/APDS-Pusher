@@ -18,13 +18,13 @@ JSON_RESPONSE = {
 
 @pytest.fixture(name="refresh_token")
 def fixture_access_token():
-    """Creating instance of expired token"""
+    """Creating instance of expired token."""
     return JSON_RESPONSE["refresh_token"]
 
 
 @pytest.fixture(name="pusher_config")
 def fixture_pusher_config():
-    """Creating instance of config class"""
+    """Creating instance of config class."""
     return config_parser.Configuration(
         client_id="a_clientid",
         client_secret="A secret",
@@ -40,14 +40,14 @@ def fixture_pusher_config():
 
 @responses.activate
 def test_get_access_token_from_refresh_token(refresh_token, pusher_config):
-    """Check the responses for refresh token flow is working"""
-    mockresp = responses.Response(
+    """Check the responses for refresh token flow is working."""
+    mock_response = responses.Response(
         method="POST",
         url="https://a_tenant.com/oauth/token",
         json=JSON_RESPONSE,
         status=200,
     )
-    responses.add(mockresp)
+    responses.add(mock_response)
 
     resp = token_refresher.get_access_token_from_refresh_token(refresh_token, pusher_config)
 
@@ -57,14 +57,14 @@ def test_get_access_token_from_refresh_token(refresh_token, pusher_config):
 
 @responses.activate
 def test_get_access_token_from_refresh_token_error(refresh_token, pusher_config):
-    """Check the responses for refresher token when error"""
-    mockresp = responses.Response(
+    """Check the responses for refresher token when error."""
+    mock_response = responses.Response(
         method="POST",
         url="https://a_tenant.com/oauth/token",
         json={"error": "error", "error_description": "Some test error"},
         status=200,
     )
-    responses.add(mockresp)
+    responses.add(mock_response)
 
     with pytest.raises(token_refresher.AccessCodeError) as err:
         token_refresher.get_access_token_from_refresh_token(refresh_token, pusher_config)
@@ -77,20 +77,20 @@ def test_get_access_token_from_refresh_token_error(refresh_token, pusher_config)
     [
         (requests.exceptions.HTTPError(), "Http Error while refreshing token"),
         (requests.exceptions.ConnectionError(), "Connection Error while refreshing token"),
-        (requests.exceptions.Timeout(), "Timeout eror while refreshing token"),
+        (requests.exceptions.Timeout(), "Timeout error while refreshing token"),
         (requests.exceptions.RequestException(), "Unknown error while refreshing token"),
     ],
 )
 @responses.activate
 def test_get_access_token_from_refresh_token_exception(resp_body, expected, refresh_token, pusher_config):
     """Check the exceptions when a refresher token is requested."""
-    mockresp = responses.Response(
+    mock_response = responses.Response(
         method="POST",
         url="https://a_tenant.com/oauth/token",
         status=404,
         body=resp_body,
     )
-    responses.add(mockresp)
+    responses.add(mock_response)
     with pytest.raises(token_refresher.AccessCodeError) as err:
         token_refresher.get_access_token_from_refresh_token(refresh_token, pusher_config)
 
