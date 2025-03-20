@@ -3,9 +3,6 @@
 variables:
   DEPLOY_ENVIRONMENT: "null"
 
-stages:
-  - pages
-
 include:
   - project:
       nocacuk/BODC/software/gitlab_runners
@@ -57,31 +54,29 @@ lint:
   script:
     - *common-run-tox
   <<: *common-rules
+  
 
-
-# TODO: not optimal as we rebuild the docs
-pages:
-  extends: docs
-  stage: deploy
-  variables:
-    TOXENV: "docs"
-    DOCSPATH: "docs/build/html"
-  script:
-    - *common-run-tox
-    - mkdir public
-    - cp -a "${DOCSPATH}/." public
-  artifacts:
-    paths:
-      - public
-  rules:
-    # only run on release tags
-    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
+# # TODO: not optimal as we rebuild the docs
+# upload:
+#   extends: .tox-job
+#   variables:
+#     TOXENV: "docs"
+#     DOCSPATH: "docs/build/html"
+#   script:
+#     - *common-run-tox
+#     - mkdir public
+#     - cp -a "${DOCSPATH}/." public
+#   artifacts:
+#     paths:
+#       - public
+#   rules:
+#     # only run on release tags
+#     - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
 
 # TODO: not optimal as we rebuild the package
 publish:
   extends:
    - .python-build
-  stage: deploy
   variables:
     TOXENV: "build"
     BUILDPATH: "dist"
