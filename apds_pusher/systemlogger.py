@@ -64,8 +64,7 @@ class SystemLogger(logging.getLoggerClass()):  # type: ignore
         if trace:
             console_out.setLevel(logging.DEBUG)
             console_format = logging.Formatter(
-                "%(asctime)s - %(levelname)s - %(name)s:%(module)s:%(lineno)d :- %("
-                "message)s"  # pylint: disable=implicit-str-concat
+                "%(asctime)s - %(levelname)s - %(name)s:%(module)s:%(lineno)d :- %(" "message)s"  # pylint: disable=implicit-str-concat
             )
         else:
             console_out.setLevel(logging.WARNING)

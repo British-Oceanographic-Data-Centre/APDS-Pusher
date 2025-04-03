@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, fields
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 
 class ParserException(Exception):
@@ -43,13 +43,13 @@ class Configuration:
     client_secret: str
     auth2_audience: str
     bodc_archive_url: str
-    file_formats: List[str]
+    file_formats: list[str]
     archive_checker_frequency: int  #: This should be passed in as minutes
     save_file_location: Path
     log_file_location: Path
 
     @classmethod
-    def from_dict_validated(cls, data_dict: Dict[str, Any]) -> Configuration:
+    def from_dict_validated(cls, data_dict: dict[str, Any]) -> Configuration:
         """Instantiate the class from a dictionary."""
         class_fields = {field.name for field in fields(cls)}
         data_fields = set(data_dict.keys())

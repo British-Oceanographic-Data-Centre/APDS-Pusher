@@ -1,7 +1,6 @@
 """Device flow authentication .A user code and tiny url is provided."""
 
 import re
-from typing import Dict, Tuple
 
 import polling2  # type: ignore
 import requests
@@ -14,7 +13,7 @@ class DeviceCodeError(Exception):
 
 
 # pylint: disable=R0801
-def get_device_code(client_id: str, auth2_audience: str, auth_domain: str) -> Dict:
+def get_device_code(client_id: str, auth2_audience: str, auth_domain: str) -> dict:
     """Method to authorize the device.
 
     The verification url and the user code is returned for user to authorise his/her device. User has to
@@ -58,7 +57,7 @@ def get_device_code(client_id: str, auth2_audience: str, auth_domain: str) -> Di
     return access_token_details
 
 
-def authenticate(config: Configuration) -> Tuple[str, str, int, str, int]:
+def authenticate(config: Configuration) -> tuple[str, str, int, str, int]:
     """Method to return read config and authenticate config.
 
     The config section is read and generates a usercode for the device and later obtain a accesstoken
@@ -104,7 +103,7 @@ def raise_if_err_contains_expired(err_description: str) -> None:
             raise DeviceCodeError("Device code is expired. Start APDS Pusher again to obtain new code")
 
 
-def receive_access_token_from_device_code(device_code_response: Dict, config: Configuration) -> Dict:
+def receive_access_token_from_device_code(device_code_response: dict, config: Configuration) -> dict:
     """Start polling to recieve the access token.
 
     Args:

@@ -6,7 +6,7 @@ import click
 import pytest
 from click.testing import CliRunner
 
-from apds_pusher import __main__, config_parser
+from apds_pusher import config_parser
 from apds_pusher.__main__ import recovery
 from apds_pusher.utils.deployment_utils import load_configuration_file
 
@@ -50,7 +50,7 @@ def test_click_exception_on_parse_error(mocker, config_path, exception_type):
 
 
 def test_recovery_command(config_path_recovery, tmp_path, mocker):
-    """Checking the Recovery command"""
+    """Checking the Recovery command."""
     # Mock the load_configuration_file function
     data_directory = tmp_path / "data"
     data_directory.mkdir()

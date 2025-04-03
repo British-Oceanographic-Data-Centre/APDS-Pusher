@@ -39,7 +39,7 @@ SAMPLE_EXCEPTION = "expired device code"
 
 @pytest.fixture(name="mock_response_403")
 def mock_error_response_code(mocker):
-    """Creating a mock error response"""
+    """Creating a mock error response."""
     resp_body = Queue()  # instantiate the queue.Queue
     item = {"error": "error", "error_description": "unknown device code"}
     resp_body.put(item)
@@ -52,7 +52,7 @@ def mock_error_response_code(mocker):
 
 @pytest.fixture(name="mock_response_200")
 def mock_ok_response_code(mocker):
-    """Creating a mock response"""
+    """Creating a mock response."""
     ok_response_mock = mocker.Mock()
     type(ok_response_mock).status_code = mocker.PropertyMock(return_value=200)
     return ok_response_mock
@@ -60,7 +60,7 @@ def mock_ok_response_code(mocker):
 
 @pytest.fixture(name="pusher_config")
 def fixture_pusher_config():
-    """Creating instance of config class"""
+    """Creating instance of config class."""
     return config_parser.Configuration(
         client_id="an_id",
         client_secret="A secret",
@@ -76,7 +76,7 @@ def fixture_pusher_config():
 
 @responses.activate
 def test_get_device_code(pusher_config):
-    """Check the responses for device flow is working"""
+    """Check the responses for device flow is working."""
     mockresp = responses.Response(
         method="POST",
         url="https://a_tenant.com/oauth/device/code",
@@ -103,7 +103,7 @@ def test_get_device_code(pusher_config):
 
 @responses.activate
 def test_get_device_code_with_error(pusher_config):
-    """Check the errors for  when device flow is working"""
+    """Check the errors for  when device flow is working."""
     mockresp = responses.Response(
         method="POST",
         url="https://a_tenant.com/oauth/device/code",
@@ -129,7 +129,7 @@ def test_get_device_code_with_error(pusher_config):
 )
 @responses.activate
 def test_get_device_code_with_exception_2(resp_body, expected, pusher_config):
-    """Check the exceptions for device flow"""
+    """Check the exceptions for device flow."""
     mockresp = responses.Response(
         method="POST",
         url="https://a_tenant.com/oauth/device/code",
@@ -161,7 +161,7 @@ def test_is_correct_response(mock_response_200):
 
 
 def test_raise_if_err_contains_expired():
-    """Check if exceptions with expired device code is picked"""
+    """Check if exceptions with expired device code is picked."""
     with pytest.raises(device_auth.DeviceCodeError) as timeouterr:
         device_auth.raise_if_err_contains_expired(SAMPLE_EXCEPTION)
 
@@ -187,14 +187,13 @@ def test_receive_access_token_from_device_code(pusher_config):
 @responses.activate
 def test_receive_access_token_from_device_code_exception(mock_response_403, mocker, pusher_config):
     """Checking if exception for a unknown reason is captured."""
-
     mocker.patch.object(
         polling2,
         "poll",
         side_effect=polling2.TimeoutException(values=mock_response_403.values),
     )
 
-    with pytest.raises(device_auth.DeviceCodeError) as unknownerr:
+    with pytest.raises(device_auth.DeviceCodeError) as unknown_err:
         device_auth.receive_access_token_from_device_code(JSON_RESPONSE, pusher_config)
 
-    assert unknownerr.value.args[0] == "Unknown error while generating device code"
+    assert unknown_err.value.args[0] == "Unknown error while generating device code"

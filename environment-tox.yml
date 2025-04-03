@@ -4,7 +4,7 @@
 name: apds-pusher-tox
 dependencies:
   # pin python version to project requirement
-  - python=3.8
+  - python=3.10
   - pip
   - pip:
     - setuptools

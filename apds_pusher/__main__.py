@@ -80,7 +80,7 @@ def process_deployment(  # pylint: disable=too-many-arguments,too-many-locals
 
     # Construct dictionary to hold data presented to end user for Authentication
     device_code_keys = ["url", "user_code", "expires_in", "device_code", "interval"]
-    device_response = dict(zip(device_code_keys, device_code_dtls))
+    device_response = dict(zip(device_code_keys, device_code_dtls, strict=False))
 
     click.echo(
         f"URL to authenticate: {device_response['url']} \n"

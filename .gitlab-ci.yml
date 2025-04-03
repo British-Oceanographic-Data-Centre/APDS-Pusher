@@ -1,105 +1,42 @@
 # common configuration for python gitlab-ci jobs
 
-stages:
-  - test
-  - build
-  - lint
-  - deploy
+variables:
+  DEPLOY_ENVIRONMENT: "null"
 
-# in some cases we only want these items for debugging so factor them out
-.common-before-script: &common-before-script
-  - set -x
-  - date
-  - whoami
-  - pwd
+include:
+  - project:
+      nocacuk/BODC/software/gitlab_runners
+    ref: master
+    file: v2/python.gitlab-ci.yml
 
-# common rules to only run jobs on MRs, normal branches, or tags
-.common-rules: &common-rules
-  rules:
-    - if: $CI_MERGE_REQUEST_ID
-    - if: '$CI_COMMIT_BRANCH == "main"'
-    - if: $CI_COMMIT_TAG
+  - project:
+      nocacuk/BODC/software/gitlab_runners
+    ref: master
+    file: v2/bodc.gitlab-ci.yml
 
-# `tox` jobs are selected using the TOXENV variable or,
-# if that is not defined, the job name environment variable
-.common-run-tox: &common-run-tox
-  - tox -e ${TOXENV:-$CI_JOB_NAME}
+  - project:
+      nocacuk/BODC/software/gitlab_runners
+    ref: master
+    file: v2/semver-tags.gitlab-ci.yml
 
-default:
-  tags:
-    - livljobs
-  before_script:
-    - *common-before-script
-    - conda activate apds-pusher-tox
 
-setup:
-  stage: .pre
-  before_script:
-    - *common-before-script
-  script:
-    - conda env update --prune --name apds-pusher-tox --file environment-tox.yml
-  rules:
-    - changes:
-        - environment-tox.yml
-    - when: manual
-      allow_failure: true
+# The test commands seen under the testenv section are executed.
+test:
+  extends:
+   - .python-test
 
-# hidden base job for running `tox` command jobs
-.tox-job:
-  script:
-    - *common-run-tox
-  <<: *common-rules
-
+# The linting commands seen under the testenv:lint section are executed.
 lint:
-  extends: .tox-job
-  stage: lint
-
-py38:
-  extends: .tox-job
-  stage: test
-  coverage: '/TOTAL.*\s+(\d+%)$/'
-  artifacts:
-    reports:
-      junit: junit.xml
-    paths:
-      - coverage.xml
+  extends:
+   - .python-lint
 
 build:
-  extends: .tox-job
-  stage: build
+  extends:
+   - .python-build
 
-docs:
-  extends: .tox-job
-  stage: build
-
-# TODO: not optimal as we rebuild the docs
-pages:
-  extends: docs
-  stage: deploy
-  variables:
-    TOXENV: "docs"
-    DOCSPATH: "docs/build/html"
-  script:
-    - *common-run-tox
-    - mkdir public
-    - cp -a "${DOCSPATH}/." public
-  artifacts:
-    paths:
-      - public
-  rules:
-    # only run on release tags
-    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
-
-# TODO: not optimal as we rebuild the package
-pypi:
-  extends: build
-  stage: deploy
-  variables:
-    TOXENV: "build"
-    BUILDPATH: "dist"
-  script:
-    - *common-run-tox
-    - twine upload --repository-url "$PYPI_REPO" -u "$PYPI_USER" -p "$PYPI_PASSWORD" "$BUILDPATH/*"
+publish:
+  extends:
+    - .python-upload
   rules:
     # push to pypi for any alpha, beta, release candidate, or release
     - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+a\d+$/'

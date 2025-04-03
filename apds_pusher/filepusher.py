@@ -5,7 +5,6 @@ import traceback
 from datetime import datetime
 from pathlib import Path
 from time import sleep
-from typing import List
 
 from requests.exceptions import ConnectTimeout, RequestException
 
@@ -117,20 +116,20 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
         self.file_logger = FileLogger(self.config.save_file_location, self.deployment_location, self.deployment_id)
         self.system_logger.info(f"File Logger located at: {self.file_logger.file_path}")
 
-    def retrieve_file_paths(self, cycle_number: int) -> List[Path]:
+    def retrieve_file_paths(self, cycle_number: int) -> list[Path]:
         """Retrieve a list of absolute paths for desired glider files."""
         self.system_logger.debug(f"Starting glider file search for {self.deployment_id} on cycle {cycle_number}")
         recursive_state = "Active" if self.is_recursive else "Not active"
         self.system_logger.info(f"Recursive folder searching is {recursive_state}")
 
         self.system_logger.debug("Opening deployment file to look for last run time")
-        with open(Path(self.deployment_file), "r", encoding="utf-8") as deployment_file:
+        with open(Path(self.deployment_file), encoding="utf-8") as deployment_file:
             deployment_time = float(deployment_file.read())
             self.system_logger.debug(f"deployment time is: {deployment_time}")
             self.system_logger.debug(f"which in machine local time is {datetime.fromtimestamp(deployment_time)}")
             self.system_logger.debug(f"which in UTC is {datetime.utcfromtimestamp(deployment_time)} ")
 
-        file_paths: List[Path] = []
+        file_paths: list[Path] = []
         self.system_logger.debug(f"file_paths start as empty: {file_paths}")
         glob_prefix = "**/*" if self.is_recursive else "*"
         self.system_logger.debug(f"search prefix is set to: {glob_prefix}")
@@ -221,7 +220,7 @@ class FilePusher:  # pylint: disable=too-many-instance-attributes
         with open(Path(self.deployment_file), "w", encoding="utf-8") as file:
             file.write(str(current_time))
 
-    def send_files_to_api(self, cycle_number: int) -> None:  # pylint: disable=R0912, R0915, too-many-locals
+    def send_files_to_api(self, cycle_number: int) -> None:  # pylint: disable=R0912, R0915, too-many-locals  # noqa: C901
         """Manages the sending of files to the API."""
         self.system_logger.debug(f"Starting file push for {self.deployment_id}")
         try:
