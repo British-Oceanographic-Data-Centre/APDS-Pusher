@@ -1,5 +1,6 @@
 # pylint: disable=duplicate-code
 """Tests for the system logger."""
+
 import logging
 from pathlib import Path
 
@@ -41,7 +42,7 @@ def test_instance_creation(tmp_path, config):
 
 
 def test_retrieve_glider_file_paths(tmp_path, config):
-    """Tests that all glider filepaths are retrieved"""
+    """Tests that all glider filepaths are retrieved."""
     glider_dir = tmp_path / "gliders/"
     glider_dir.mkdir()
 

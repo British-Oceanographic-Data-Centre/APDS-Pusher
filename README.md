@@ -16,23 +16,23 @@ This section will walk you through the basic steps to install
 2. Creating a virtual environment to run the tool, and
 3. Installing the tool itself.
 
-Python version
-~~~~~~~~~~~~~~
+### Python version
 
-``APDS-Pusher`` requires Python 3.10 or higher to run. To check the
+`APDS-Pusher` requires Python 3.10 or higher to run. To check the
 version of Python you are using, type the following command in the
 terminal:
 
-.. code:: shell
+```shell
+$ python --version
+```
 
-   $ python --version
 
 If your version of Python is below 3.10 (or you don't have Python
 installed), you will need to install a newer version of
-`Python <https://www.python.org/>`__.
+[Python](https://www.python.org/).
 
-Creating a virtual environment
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+### Creating a virtual environment
+
 
 In order to isolate the installation of ``APDS-Pusher`` from your other
 software, it is recommended that it be installed in its own virtual
@@ -42,52 +42,49 @@ To create a virtual environment called ``venv``, first navigate to the
 location you wish to create the virtual environment in on your system,
 and then run the following command:
 
-.. code:: shell
-
-   $ python -m venv venv
+```shell
+$ python -m venv venv
+```
 
 You then need to activate the virtual environment as follows:
 
 Linux:
 
-.. code:: shell
-
-   $ . ./venv/bin/activate
+```shell
+$ . ./venv/bin/activate
+```
 
 Windows:
 
-.. code:: shell
+```shell
+$ . ./venv/Scripts/activate
+```
 
-   $ . ./venv/Scripts/activate
-
-Installing APDS-Pusher
-~~~~~~~~~~~~~~~~~~~~~~
+### Installing APDS-Pusher
 
 Now that the virtual environment is activated, you can install
 ``APDS-Pusher`` :
 
-.. code:: shell
-
-   (venv) $ python -m pip install git+https://github.com/British-Oceanographic-Data-Centre/APDS-Pusher
-
+```shell
+(venv) $ python -m pip install git+https://github.com/British-Oceanographic-Data-Centre/APDS-Pusher
+```
 
 You can check that it is installed correctly by now running:
 
-.. code:: shell
-
-   (venv) $ bodc-archive-pusher --help
+```shell
+(venv) $ bodc-archive-pusher --help
+```
 
 This should display the help for the tool (see also next section) if it
 is installed correctly.
 
-Checking version
-~~~~~~~~~~~~~~~~
+### Checking version
 
 To view the tool version you can use the command
 
-.. code:: shell
-
-   (venv) $ bodc-archive-pusher --version
+```shell
+(venv) $ bodc-archive-pusher --version
+```
 
 This will show the current installed version, the latest version available, and give the command to use to install the latest version.
 
@@ -125,19 +122,19 @@ The configuration file should have the following information (although
 the contents might differ depending on your particular use case) and be
 saved as a ``.json`` file:
 
-.. code:: json
-
-   {
-       "auth0_tenant": "bodc.eu.auth0.com",
-       "client_id" : "YOUR_CLIENT_ID",
-       "client_secret": "YOUR_CLIENT_SECRET",
-       "auth2_audience": "who-am-i-talking-to",
-       "bodc_archive_url" : "test_archive_url",
-       "file_formats" : [".sbd", ".tbd", ".cac"],
-       "archive_checker_frequency" : 100,
-       "save_file_location": "/path/to/output/directory",
-       "log_file_location": "/path/to/output/directory"
-   }
+```json
+{
+   "auth0_tenant": "bodc.eu.auth0.com",
+   "client_id" : "YOUR_CLIENT_ID",
+   "client_secret": "YOUR_CLIENT_SECRET",
+   "auth2_audience": "who-am-i-talking-to",
+   "bodc_archive_url" : "test_archive_url",
+   "file_formats" : [".sbd", ".tbd", ".cac"],
+   "archive_checker_frequency" : 100,
+   "save_file_location": "/path/to/output/directory",
+   "log_file_location": "/path/to/output/directory"
+}
+```
 
 An explanation of each field follows, if you are uncertain as to what
 values they should take, contact BODC for an example file:
@@ -159,17 +156,17 @@ values they should take, contact BODC for an example file:
 -  ``log_file_location``: A path to the directory where the logs of
    ``APDS-Pusher`` will be written to disk.
 
-Example
-~~~~~~~
+### Example
 
 An example invocation of the tool is shown below:
 
-.. code:: shell
+```shell
+bodc-archive-pusher start --deployment-id 123 --data-directory /data/dep-123 --config-file /data/config.json --production --no-dry-run
+bodc-archive-pusher stop --deployment-id 123 --config-file /data/config.json
+bodc-archive-pusher recovery --deployment-id 123 --data-directory /data/dep-123 --config-file /data/config.json
+```
 
-   bodc-archive-pusher start --deployment-id 123 --data-directory /data/dep-123 --config-file /data/config.json --production --no-dry-run
-   bodc-archive-pusher stop --deployment-id 123 --config-file /data/config.json
-   bodc-archive-pusher recovery --deployment-id 123 --data-directory /data/dep-123 --config-file /data/config.json
-
+   
 The options used above are explained below:
 
 -  ``--deployment-id 123``: This tells the tool that the data being
@@ -193,50 +190,47 @@ The options used above are explained below:
    options <#command-line-options>`__ for the default value if this is
    not specified.
 
-Debug mode
-~~~~~~~~~~
+### Debug mode
+
 If you are having an issue and are unsure what might be the problem then we suggest turning on debug mode, this is done
 by add the --trace option to the end of the start command.
 
 This option tells the code base to be (very) verbose about what is happening inside the program.
 For this reason we *do not* suggest keeping this option on for any longer than is needed.
 
-.. code:: shell
+```shell
+bodc-archive-pusher start --deployment-id 123 --data-directory /data/dep-123 --config-file /data/config.json --trace
+```
 
-    bodc-archive-pusher start --deployment-id 123 --data-directory /data/dep-123 --config-file /data/config.json --trace
+### Command line options
 
+~~~
+Usage: bodc-archive-pusher [OPTIONS]
 
+ This application allows organisations to continuously push data to BODC from
+ the command line.
 
-Command line options
-~~~~~~~~~~~~~~~~~~~~
+Options:
+ --deployment-id TEXT            The Code/ID for the specific
+                                 deployment.  [required]
+ --data-directory DIRECTORY      Full path to the directory where
+                                 files to be uploaded are stored.
+                                 [required]
+ --config-file FILE              Full path to config file used for
+                                 authentication.  [required]
+ --production / --non-production
+                                 Use this flag to switch between
+                                 production and non-production
+                                 environments.  [default: non-
+                                 production]
+ --dry-run / --no-dry-run        Use this flag to switch between a
+                                 regular run and a dry run send of
+                                 files.  [default: no-dry-run]
+ --recursive / --non-recursive   Use this flag to switch between
+                                 recursive and non-recursive
+                                 searching of files.  [default:
+                                 recursive]
+ --help                          Show this message and exit.
 
-::
-
-   Usage: bodc-archive-pusher [OPTIONS]
-
-     This application allows organisations to continuously push data to BODC from
-     the command line.
-
-   Options:
-     --deployment-id TEXT            The Code/ID for the specific
-                                     deployment.  [required]
-     --data-directory DIRECTORY      Full path to the directory where
-                                     files to be uploaded are stored.
-                                     [required]
-     --config-file FILE              Full path to config file used for
-                                     authentication.  [required]
-     --production / --non-production
-                                     Use this flag to switch between
-                                     production and non-production
-                                     environments.  [default: non-
-                                     production]
-     --dry-run / --no-dry-run        Use this flag to switch between a
-                                     regular run and a dry run send of
-                                     files.  [default: no-dry-run]
-     --recursive / --non-recursive   Use this flag to switch between
-                                     recursive and non-recursive
-                                     searching of files.  [default:
-                                     recursive]
-     --help                          Show this message and exit.
-
-     --trace                         print alot of logging to the screen and into the file.
+ --trace                         print logging to the screen and into the file.
+~~~

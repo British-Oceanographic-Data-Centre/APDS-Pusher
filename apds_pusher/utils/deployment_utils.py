@@ -4,7 +4,6 @@ import json
 import sys
 import time
 from pathlib import Path
-from typing import Tuple
 
 import click
 
@@ -48,7 +47,7 @@ def check_delete_active_deployments(deployment_id: str, config: Configuration) -
         raise DeploymentNotFoundError("No deployments being archived.")
 
 
-def check_add_active_deployments(deployment_id: str, config: Configuration) -> Tuple[bool, Path]:
+def check_add_active_deployments(deployment_id: str, config: Configuration) -> tuple[bool, Path]:
     """Checks and adds if archival for a deployment is going on.
 
     Args:
