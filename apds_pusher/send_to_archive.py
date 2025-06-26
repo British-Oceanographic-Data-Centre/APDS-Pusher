@@ -111,10 +111,10 @@ def send_to_archive_api(  # pylint: disable=too-many-arguments,  # noqa: D417
         logger.error("Mode selected via the command option is invalid❌")
         raise ValueError("Invalid mode")
 
-    url = urljoin(bodc_archive_url, f"{archive_mode}/{deployment_id}?")
+    url = urljoin(bodc_archive_url, f"{archive_mode}/{deployment_id}")
 
     if mode == "NRT":
-        url += f"relativePath={file_location.name}&hostPath=/{file_location.parent.resolve()}/"
+        url += f"?relativePath={file_location.name}&hostPath=/{file_location.parent.resolve()}/"
 
     # Populate the headers with the access token
     headers = {"Authorization": f"Bearer {access_token}"}
