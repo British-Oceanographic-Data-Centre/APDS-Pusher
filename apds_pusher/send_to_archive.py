@@ -133,20 +133,21 @@ def send_to_archive_api(  # pylint: disable=too-many-arguments,  # noqa: D417
             )
         ]
     response = rq.request("POST", url, headers=headers, files=files, timeout=600)  # type: ignore
-    if "500 Internal Server Error" in response.text:
-        logger.error(f"Exception caught during archive: {FileUploadError}")
+    logger.debug("Response from archive API: %s - %s", response.status_code, response.text)
+    if response.status_code == 500:
+        logger.error(f"Internal Server Error caught during archive ❌")
         raise FileUploadError
-    if "401 Unauthorized" in response.text:
-        logger.error(f"Authentication Exception caught during archive: {AuthenticationError}❌")
+    if response.status_code == 401:
+        logger.error(f"Authentication Error caught during archive ❌")
         raise AuthenticationError
-    if "404 Not Found" in response.text:
-        logger.error(f"FileNotFound Exception caught during archive: {FileNotFoundError}👀")
+    if response.status_code == 404:
+        logger.error(f"FileNotFound Exception caught during archive 👀")
         raise FileNotFoundError
-    if "File Archive Successful" in response.text:
-        logger.info("Successfully archived🎉")
+    if response.ok:
+        logger.info("Successfully archived 🎉")
         if mode == "Recovery" and check_delete_active_deployments(deployment_id, config):
             logger.info("%s is now going to be stopped on the pusher.", deployment_id)
         return "Success"
 
-    logger.info("Failed to archive.😒")
+    logger.info("Failed to archive 🙁")
     return "Fail"
